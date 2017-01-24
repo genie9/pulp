@@ -68,16 +68,21 @@ class Command(BaseCommand) :
                             (linenum, expected_number_of_fields, len(data))
                         continue
 
-                    a = articles[int(data[0])]
-                
-                    #with transaction.atomic() :
-                    for i in range(2, 2 + (2 * NUM_TOPICS_TO_STORE), 2) : #range(2, len(data), 2) :
-                    
+                    # a = articles[int(data[0])]
+                    a = articles.get(arxivid=data[1].split('/')[-1].split('.txt')[0])
+
+                    # finding best topics and their numbers, added by genie
+                    dist = map(float, data[2::])
+                    top_ind = sorted(range(len(dist)), key=lambda k: dist[k], reverse=True)[0:NUM_TOPICS_TO_STORE]
+
+                    # with transaction.atomic() :
+                    for i in range(top_ind) :  # 2 + (2 * NUM_TOPICS_TO_STORE), 2) : #range(2, len(data), 2) :
+
                         tw = TopicWeight()
 
                         tw.article  = a
-                        tw.topic    = topics[int(data[i])]
-                        tw.weight   = float(data[i+1])
+                        tw.topic    = topics.get(num=top_ind[i])  # topics[top_ind[i]]
+                        tw.weight   = dist[top_ind[i]]  # float(data[i+1])
 
                         tw.save()
 

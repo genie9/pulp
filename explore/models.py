@@ -19,6 +19,7 @@ import datetime
 
 class Topic(models.Model) :
     label     = models.CharField(max_length=512)
+    num       = models.IntegerField()
 
 #class TopicKeyword(models.Model) :
 #    topic    = models.ForeignKey(Topic)

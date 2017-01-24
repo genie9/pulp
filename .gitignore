@@ -3,3 +3,11 @@
 *swp
 node_modules/
 server.sh
+*db.*
+*db_*
+*.txt
+*.idea
+test.xml
+env/
+bm25*
+linrel*
