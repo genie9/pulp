@@ -19,6 +19,7 @@ import datetime
 
 class Topic(models.Model) :
     label     = models.CharField(max_length=512)
+    # added by genie
     num       = models.IntegerField()
 
 #class TopicKeyword(models.Model) :

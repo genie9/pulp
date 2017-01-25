@@ -26,6 +26,7 @@ class Command(BaseCommand) :
     def handle(self, *args, **options) :
 
         NUM_TOPICS_TO_STORE = 10
+        dist_file = 'full_100_inf_props_100.txt'
 
         topic_count = Topic.objects.count()
         if topic_count == 0 :
@@ -45,12 +46,13 @@ class Command(BaseCommand) :
         topics = Topic.objects.all()
         articles = Article.objects.all()
 
-        expected_number_of_fields = (topic_count * 2) + 2
+        expected_number_of_fields = topic_count + 2  # (topic_count * 2) + 2
 
-        print >> stderr, "reading %s ..." % args[0]
+        print >> stderr, "reading %s ..." % dist_file  # args[0]
 
         # arxiv_cs_example/doc-topics.txt
-        with open(args[0]) as f :
+        with open(dist_file) as f:  # with open(args[0]) as f :
+
             linenum = 0
 
             with transaction.atomic() :
@@ -69,14 +71,21 @@ class Command(BaseCommand) :
                         continue
 
                     # a = articles[int(data[0])]
-                    a = articles.get(arxivid=data[1].split('/')[-1].split('.txt')[0])
+
+                    arx_num = data[1].split('/')[-1].split('.txt')[0]
+                    try :
+                        a = articles.get(arxivid=arx_num)
+                        print a
+                    except :
+                        print 'article %s doesnt exist, going to next one' % arx_num
+                        continue
 
                     # finding best topics and their numbers, added by genie
                     dist = map(float, data[2::])
                     top_ind = sorted(range(len(dist)), key=lambda k: dist[k], reverse=True)[0:NUM_TOPICS_TO_STORE]
 
                     # with transaction.atomic() :
-                    for i in range(top_ind) :  # 2 + (2 * NUM_TOPICS_TO_STORE), 2) : #range(2, len(data), 2) :
+                    for i in range(len(top_ind)) :  # 2 + (2 * NUM_TOPICS_TO_STORE), 2) : #range(2, len(data), 2) :
 
                         tw = TopicWeight()
 
@@ -86,9 +95,10 @@ class Command(BaseCommand) :
 
                         tw.save()
 
+                    print top_ind
+
                     if (linenum % 1000) == 0 :
                         self.stderr.write("saved topic weights for %s articles" % linenum)
-
 
         expected_weights = NUM_TOPICS_TO_STORE * article_count
         print >> stderr, "Wrote %d topic weight objects. I was expecting %d (%d articles x %d topics)" \

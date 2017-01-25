@@ -28,7 +28,7 @@ class Command(BaseCommand) :
         NUM_KEYWORDS = 5
 
         # arxiv_cs_example/topic_top_keywords
-        with open(args[0]) as f :
+        with open('secs_100_keys.txt') as f:  # with open(args[0]) as f :
             linenum = 0
 
             for line in f :
@@ -39,7 +39,7 @@ class Command(BaseCommand) :
                     continue
 
                 try :
-                    name,something,keywords = line.split('\t')
+                    num,something,keywords = line.split('\t')
 
                 except ValueError :
                     print >> stderr, "Error: too many tokens, line %d" % linenum
@@ -50,6 +50,8 @@ class Command(BaseCommand) :
                 with transaction.atomic() :
                     t = Topic()
                     t.label = ','.join(keywords[:NUM_KEYWORDS])
+                    # added by genie
+                    t.num = num
                     t.save()
 
                     #for k in keywords :
