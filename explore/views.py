@@ -19,8 +19,8 @@ from django.shortcuts import render
 from rest_framework import status
 from rest_framework import generics
 from rest_framework.response import Response
-from rest_framework.views import APIView # class-based views
-from rest_framework.decorators import api_view # for function-based views
+from rest_framework.views import APIView  # class-based views
+from rest_framework.decorators import api_view  # for function-based views
 
 from explore.models import Article, ArticleTFIDF, Experiment, ExperimentIteration, ArticleFeedback, User, TopicWeight
 from explore.serializers import ArticleSerializer
@@ -41,23 +41,26 @@ import os.path
 import datetime
 import re
 
-#from profilehooks import profile, coverage, timecall
+# from profilehooks import profile, coverage, timecall
 
 
 DEFAULT_NUM_ARTICLES = 10
 
-#class UserViewSet(viewsets.ModelViewSet):
+
+# class UserViewSet(viewsets.ModelViewSet):
 #    queryset = User.objects.all()
 #    serializer_class = UserSerializer
 
-class PulpException(Exception) :
+class PulpException(Exception):
     pass
 
-class GetArticle(generics.RetrieveAPIView) :
+
+class GetArticle(generics.RetrieveAPIView):
     queryset = Article.objects.all()
     serializer_class = ArticleSerializer
 
-#class GetArticleOld(APIView) :
+
+# class GetArticleOld(APIView) :
 #    def get(self, request, article_id) :
 #        try :
 #            article = Article.objects.get(id=article_id)
@@ -70,99 +73,104 @@ class GetArticle(generics.RetrieveAPIView) :
 
 @api_view(['GET'])
 def logout_view(request):
-    #logout(request)
+    # logout(request)
     return Response(status=status.HTTP_200_OK)
 
-#print "caching timestamps..."
-TIMESTAMPS = None #dict([ (a.id - 1, a.date) for a in Article.objects.all() ]) # -1 because numpy is zero indexed
 
-def get_articles(method, experiment, start_index, num_articles) :
+# print "caching timestamps..."
+TIMESTAMPS = None  # dict([ (a.id - 1, a.date) for a in Article.objects.all() ]) # -1 because numpy is zero indexed
 
-    if method in ('bm25', 'okapibm25') :
+
+def get_articles(method, experiment, start_index, num_articles):
+    if method in ('bm25', 'okapibm25'):
         return get_articles_bm25(experiment, start_index, num_articles)
 
-    elif method in ('linrel',) :
+    elif method in ('linrel',):
         return get_articles_linrel(experiment, start_index, num_articles)
 
-    elif method in ('linrel_positive',) :
+    elif method in ('linrel_positive',):
         return get_articles_linrel_positive(experiment, start_index, num_articles)
 
-    else :
+    else:
         assert False, "unknown algorithm requested (%s)" % (method)
+
 
 badchars_pat = re.compile("[^a-zA-Z\s]")
 
+
 # query terms - a list of stemmed query words
 # n - the number of articles to return
-#@timecall(immediate=True)
-def get_articles_bm25(exp, start_index, num_articles) : #query_terms, n, from_date, to_date, e) :
+# @timecall(immediate=True)
+def get_articles_bm25(exp, start_index, num_articles):  # query_terms, n, from_date, to_date, e) :
     bm25 = load_sparse_bm25()
     features = load_features_bm25()
 
     query = badchars_pat.sub(' ', exp.query).lower()
 
     stemmer = SnowballStemmer('english')
-    query_terms = [ stemmer.stem(term) for term in query.split() ]
+    query_terms = [stemmer.stem(term) for term in query.split()]
 
-    if not len(query_terms) :
+    if not len(query_terms):
         raise PulpException("query string (\"%s\") contains no query terms" % (exp.query))
-    
+
     from_date = exp.from_date
     to_date = exp.to_date
 
     tmp = {}
 
-    for qt in query_terms :
-        if qt not in features :
+    for qt in query_terms:
+        if qt not in features:
             continue
 
         findex = features[qt]
 
-        for aindex in numpy.nonzero(bm25[:, findex])[0] :
+        for aindex in numpy.nonzero(bm25[:, findex])[0]:
             akey = aindex.item()
-            if akey not in tmp :
+            if akey not in tmp:
                 tmp[akey] = 0.0
 
-            tmp[akey] += bm25[aindex,findex]
+            tmp[akey] += bm25[aindex, findex]
 
-    ranking = sorted(tmp.items(), key=lambda x : x[1], reverse=True)
+    ranking = sorted(tmp.items(), key=lambda x: x[1], reverse=True)
 
     # to support positive feedback only linrel, okapiBM25 might be
     # called after the first iteration
     articles_obj = ArticleFeedback.objects.filter(experiment=exp).exclude(selected=None)
-    articles = [ a.article.id - 1 for a in articles_obj ]
+    articles = [a.article.id - 1 for a in articles_obj]
 
     print articles
 
     # ver.3
     # find top n articles in date range
     top_ids = []
-    for i in ranking :
-        if (i[0] not in articles) and ((not TIMESTAMPS) or (from_date < TIMESTAMPS[i[0]] <= to_date)) :
-            top_ids.append(i[0] + 1) # +1 because db is one indexed
+    for i in ranking:
+        if (i[0] not in articles) and ((not TIMESTAMPS) or (from_date < TIMESTAMPS[i[0]] <= to_date)):
+            top_ids.append(i[0] + 1)  # +1 because db is one indexed
 
-            if len(top_ids) == (start_index + num_articles) :
+            if len(top_ids) == (start_index + num_articles):
                 break
 
     top_ids = top_ids[-num_articles:]
 
     # ver.1
-    #return [ articles[r[0]] for r in ranking[:n] ]
+    # return [ articles[r[0]] for r in ranking[:n] ]
 
     # ver.2
-    #id2article = dict([ (a.id, a) for a in Article.objects.filter(pk__in=[ r[0]+1 for r in ranking[:n] ]) ])
-    #top_articles = [ id2article[i[0]+1] for i in ranking[:n] ]
+    # id2article = dict([ (a.id, a) for a in Article.objects.filter(pk__in=[ r[0]+1 for r in ranking[:n] ]) ])
+    # top_articles = [ id2article[i[0]+1] for i in ranking[:n] ]
 
     # ver.3
-    id2article = dict([ (a.id, a) for a in Article.objects.filter(pk__in=top_ids) ])
-    top_articles = [ id2article[i] for i in top_ids ]
+    id2article = dict([(a.id, a) for a in Article.objects.filter(pk__in=top_ids)])
+    top_articles = [id2article[i] for i in top_ids]
 
     return top_articles
+
 
 print "loading sparse linrel..."
 X = load_sparse_linrel()
 
-def linrel(articles, feedback, data, start, n, from_date, to_date, mew=1.0, exploration_rate=1.0) :
+
+def linrel(articles, feedback, data, start, n, from_date, to_date, mew=1.0, exploration_rate=1.0):
     assert len(articles) == len(feedback), "articles and feedback are not the same length"
 
     X = data
@@ -170,7 +178,7 @@ def linrel(articles, feedback, data, start, n, from_date, to_date, mew=1.0, expl
     num_articles = X.shape[0]
     num_features = X.shape[1]
 
-    X_t = X[ numpy.array(articles) ]
+    X_t = X[numpy.array(articles)]
     X_tt = X_t.transpose()
 
     I = mew * scipy.sparse.identity(num_features, format='dia')
@@ -190,26 +198,27 @@ def linrel(articles, feedback, data, start, n, from_date, to_date, mew=1.0, expl
     variance = (exploration_rate / 2.0) * normL2
     I_t = mean + variance
 
-
     linrel_ordered = numpy.argsort(I_t.transpose()[0]).tolist()[0]
     top_n = []
 
-    for i in linrel_ordered[::-1] :
-        #if i not in articles :
-        if (i not in articles) and ((not TIMESTAMPS) or (from_date < TIMESTAMPS[i] <= to_date)) :
+    for i in linrel_ordered[::-1]:
+        # if i not in articles :
+        if (i not in articles) and ((not TIMESTAMPS) or (from_date < TIMESTAMPS[i] <= to_date)):
             top_n.append(i)
 
-        if len(top_n) == (start + n) :
+        if len(top_n) == (start + n):
             break
 
     top_n = top_n[-n:]
 
     return top_n, \
-           mean[ numpy.array(top_n) ].transpose().tolist()[0], \
-           variance[ numpy.array(top_n) ].transpose().tolist()[0], \
+           mean[numpy.array(top_n)].transpose().tolist()[0], \
+           variance[numpy.array(top_n)].transpose().tolist()[0], \
            K
 
-def linrel_positive_feedback_only(articles, feedback, data, start, n, from_date, to_date, mew=1.0, exploration_rate=1.0) :
+
+def linrel_positive_feedback_only(articles, feedback, data, start, n, from_date, to_date, mew=1.0,
+                                  exploration_rate=1.0):
     assert len(articles) == len(feedback), "articles and feedback are not the same length"
 
     X = data
@@ -217,16 +226,16 @@ def linrel_positive_feedback_only(articles, feedback, data, start, n, from_date,
     num_articles = X.shape[0]
     num_features = X.shape[1]
 
-    #positive_articles = [ articles[i] for i,fb in enumerate(feedback) if fb == 1 ]
+    # positive_articles = [ articles[i] for i,fb in enumerate(feedback) if fb == 1 ]
 
-    #print feedback
-    #print positive_articles
+    # print feedback
+    # print positive_articles
 
-    #if len(positive_articles) < 2 :
+    # if len(positive_articles) < 2 :
     #    raise PulpException("need feedback on 2 or more articles for linrel to work with only positive feedback, %d provided" % (len(positive_articles)))
 
-    X_t = X[ numpy.array(articles) ]
-    #X_t = X[ numpy.array(positive_articles) ]
+    X_t = X[numpy.array(articles)]
+    # X_t = X[ numpy.array(positive_articles) ]
     X_tt = X_t.transpose()
 
     I = mew * scipy.sparse.identity(num_features, format='dia')
@@ -235,39 +244,38 @@ def linrel_positive_feedback_only(articles, feedback, data, start, n, from_date,
     A = X * W
 
     Y_t = numpy.matrix(feedback).transpose()
-    #Y_t = numpy.matrix([1] * int(sum(feedback))).transpose()
+    # Y_t = numpy.matrix([1] * int(sum(feedback))).transpose()
 
     tmpA = numpy.array(A.todense())
     normL2 = numpy.matrix(numpy.sqrt(numpy.sum(tmpA * tmpA, axis=1))).transpose()
 
     # W * Y_t is the keyword weights
-    K = W * Y_t 
+    K = W * Y_t
 
     mean = A * Y_t
     variance = (exploration_rate / 2.0) * normL2
     I_t = mean + variance
 
-
     linrel_ordered = numpy.argsort(I_t.transpose()[0]).tolist()[0]
     top_n = []
 
-    for i in linrel_ordered[::-1] :
-        #if i not in articles :
-        if (i not in articles) and ((not TIMESTAMPS) or (from_date < TIMESTAMPS[i] <= to_date)) :
+    for i in linrel_ordered[::-1]:
+        # if i not in articles :
+        if (i not in articles) and ((not TIMESTAMPS) or (from_date < TIMESTAMPS[i] <= to_date)):
             top_n.append(i)
 
-        if len(top_n) == (start + n) :
+        if len(top_n) == (start + n):
             break
 
     top_n = top_n[-n:]
 
     return top_n, \
-           mean[ numpy.array(top_n) ].transpose().tolist()[0], \
-           variance[ numpy.array(top_n) ].transpose().tolist()[0], \
+           mean[numpy.array(top_n)].transpose().tolist()[0], \
+           variance[numpy.array(top_n)].transpose().tolist()[0], \
            K
 
-def get_keyword_stats(articles, keyword_weights) :
 
+def get_keyword_stats(articles, keyword_weights):
     K = keyword_weights
     top_articles = articles
 
@@ -277,92 +285,98 @@ def get_keyword_stats(articles, keyword_weights) :
 
     used_keywords = collections.defaultdict(list)
 
-    for i in top_articles :
-        for word,stem in [ (word,stemmer.stem(word)) for word in i.title.split() + i.abstract.split() ] :
+    for i in top_articles:
+        for word, stem in [(word, stemmer.stem(word)) for word in i.title.split() + i.abstract.split()]:
             used_keywords[stem].append(word)
 
     keyword_stats = {}
     features = load_features_linrel()
 
-    for word in used_keywords :
-        if word not in features :
+    for word in used_keywords:
+        if word not in features:
             continue
 
         index = features[word]
-        value = K[int(index),0]**2
+        value = K[int(index), 0] ** 2
 
-        for key in used_keywords[word] :
+        for key in used_keywords[word]:
             keyword_stats[key] = value
 
     keyword_sum = sum(keyword_stats.values())
 
     # if no articles are selected (feedback = [0,0,0,... ])
     # then this can divide by zero
-    if keyword_sum :
-        for i in keyword_stats :
+    if keyword_sum:
+        for i in keyword_stats:
             keyword_stats[i] /= keyword_sum
 
     return keyword_stats
 
-def get_stems(articles) :
+
+def get_stems(articles):
     stems = collections.defaultdict(list)
 
     stopwords = get_stop_words()
     stemmer = SnowballStemmer('english')
 
-    for i in articles :
-        for word,stem in [ (word,stemmer.stem(word)) for word in clean_text(i.title + ' ' + i.abstract).split() if word not in stopwords ] :
-            if stem not in stems[i.id] :
+    for i in articles:
+        for word, stem in [(word, stemmer.stem(word)) for word in clean_text(i.title + ' ' + i.abstract).split() if
+                           word not in stopwords]:
+            if stem not in stems[i.id]:
                 stems[i.id].append(stem)
 
-    for k in stems :
+    for k in stems:
         stems[k].sort()
 
     return dict(stems)
 
-def get_article_stats(articles, exploitation, exploration) :
+
+def get_article_stats(articles, exploitation, exploration):
     article_stats = {}
 
-    for index,article_id in enumerate(articles) :
+    for index, article_id in enumerate(articles):
         article_stats[article_id] = (exploitation[index], exploration[index])
 
     return article_stats
 
-#@timecall(immediate=True)
-#@profile
-def get_top_articles_linrel(e, start, count, exploration) :
+
+# @timecall(immediate=True)
+# @profile
+def get_top_articles_linrel(e, start, count, exploration):
     global X
 
     articles_obj = ArticleFeedback.objects.filter(experiment=e).exclude(selected=None)
-    articles_npid = [ a.article.id - 1 for a in articles_obj ] # database is 1-indexed, numpy is 0-indexed
-    feedback = [ 1.0 if a.selected else 0.0 for a in articles_obj ]
+    articles_npid = [a.article.id - 1 for a in articles_obj]  # database is 1-indexed, numpy is 0-indexed
+    feedback = [1.0 if a.selected else 0.0 for a in articles_obj]
     data = X
 
-    articles_new_npid,mean,variance,kw_weights = linrel_positive_feedback_only( #linrel(
-                                                        articles_npid,
-                                                        feedback,
-                                                        data,
-                                                        start,
-                                                        count,
-                                                        e.from_date,
-                                                        e.to_date,
-                                                        exploration_rate=exploration)
+    articles_new_npid, mean, variance, kw_weights = linrel_positive_feedback_only(  # linrel(
+        articles_npid,
+        feedback,
+        data,
+        start,
+        count,
+        e.from_date,
+        e.to_date,
+        exploration_rate=exploration)
 
-    articles_new_dbid = [ i + 1 for i in articles_new_npid ] # database is 1-indexed, numpy is 0-indexed
+    articles_new_dbid = [i + 1 for i in articles_new_npid]  # database is 1-indexed, numpy is 0-indexed
     articles_new_obj = Article.objects.filter(pk__in=articles_new_dbid)
 
     # everything comes out of the database sorted by id...
-    tmp = dict([ (a.id, a) for a in articles_new_obj ])
+    tmp = dict([(a.id, a) for a in articles_new_obj])
 
-    return [ tmp[id] for id in articles_new_dbid ], \
+    return [tmp[id] for id in articles_new_dbid], \
            get_keyword_stats(articles_new_obj, kw_weights), \
            get_article_stats(articles_new_dbid, mean, variance), \
            get_stems(articles_new_obj)
 
-def get_running_experiments(user) :
+
+def get_running_experiments(user):
     return Experiment.objects.filter(user=user, state=Experiment.RUNNING)
 
-#def create_experiment(sid, user, num_documents) :
+
+# def create_experiment(sid, user, num_documents) :
 #    get_running_experiments(sid).update(state=Experiment.ERROR)
 #
 #    e = Experiment()
@@ -375,22 +389,23 @@ def get_running_experiments(user) :
 #
 #    return e
 
-def get_experiment(user) :
+def get_experiment(user):
     e = get_running_experiments(user)
 
-    if len(e) != 1 :
+    if len(e) != 1:
         e.update(state=Experiment.ERROR)
         return None
 
     return e[0]
 
-def create_iteration(experiment, articles) :
+
+def create_iteration(experiment, articles):
     ei = ExperimentIteration()
     ei.experiment = experiment
     ei.iteration = experiment.number_of_iterations
     ei.save()
 
-    for article in articles :
+    for article in articles:
         afb = ArticleFeedback()
         afb.article = article
         afb.experiment = experiment
@@ -399,109 +414,113 @@ def create_iteration(experiment, articles) :
 
     return ei
 
-def get_last_iteration(e) :
-    return ExperimentIteration.objects.get(experiment=e, iteration=e.number_of_iterations-1)
 
-def add_feedback(ei, articles, clickdata, seendata) :
+def get_last_iteration(e):
+    return ExperimentIteration.objects.get(experiment=e, iteration=e.number_of_iterations - 1)
+
+
+def add_feedback(ei, articles, clickdata, seendata):
     feedback = ArticleFeedback.objects.filter(iteration=ei)
 
-    clicks = dict([ (c['id'], (c['reading_started'], c['reading_ended'])) for c in clickdata ])
+    clicks = dict([(c['id'], (c['reading_started'], c['reading_ended'])) for c in clickdata])
 
-    for fb in feedback :
+    for fb in feedback:
         print "saving clicked=%s for %s" % (str(fb.article.id in articles), str(fb.article.id))
         fb.selected = fb.article.id in articles
         fb.clicked = fb.article.id in clicks
         fb.seen = fb.article.id in seendata
 
-        if fb.clicked :
+        if fb.clicked:
             fb.reading_start, fb.reading_end = clicks[fb.article.id]
 
         fb.save()
 
-def get_unseen_articles(e) :
-    return Article.objects.exclude(pk__in=[ a.article.id for a in ArticleFeedback.objects.filter(experiment=e) ])
+
+def get_unseen_articles(e):
+    return Article.objects.exclude(pk__in=[a.article.id for a in ArticleFeedback.objects.filter(experiment=e)])
+
 
 @api_view(['GET'])
-def textual_query(request) :
-    if request.method == 'GET' :
+def textual_query(request):
+    if request.method == 'GET':
         # experiments are started implicitly with a text query
         # and experiments are tagged with the session id
-#        request.session.flush()
-        #print request.session.session_key
+        #        request.session.flush()
+        # print request.session.session_key
         print json.dumps(request.GET, sort_keys=True, indent=4, separators=(',', ': '))
 
         # get parameters from url
         # q : query string
-        if 'q' not in request.GET : # or 'participant_id' not in request.GET :
+        if 'q' not in request.GET:  # or 'participant_id' not in request.GET :
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
         query_string = request.GET['q']
 
-        if ('participant_id' in request.GET) and request.GET['participant_id'] :
+        if ('participant_id' in request.GET) and request.GET['participant_id']:
             participant_id = request.GET['participant_id']
-        else :
+        else:
             request.session.flush()
             participant_id = request.session.session_key
-            
+
         print "participant =", participant_id
 
-        try :
+        try:
             user = User.objects.get(username=participant_id)
 
-        except User.DoesNotExist :
+        except User.DoesNotExist:
             user = User()
             user.username = participant_id
             user.save()
-            #return Response(status=status.HTTP_400_BAD_REQUEST)
+            # return Response(status=status.HTTP_400_BAD_REQUEST)
 
         # article-count : number of articles to return
         num_articles = int(request.GET.get('article-count', DEFAULT_NUM_ARTICLES))
         num_topic_articles = int(request.GET.get('topic-count', 100))
 
-        if num_topic_articles < num_articles :
+        if num_topic_articles < num_articles:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
         # from_year and to_year to run the query over
-        from_year = datetime.date(request.GET.get('from_year', 1900),  1,  1)
-        to_year   = datetime.date(request.GET.get('to_year',   2100), 12, 31)
+        from_year = datetime.date(request.GET.get('from_year', 1900), 1, 1)
+        to_year = datetime.date(request.GET.get('to_year', 2100), 12, 31)
 
         print "article-count: %d" % (num_articles)
 
         # create new experiment
         e = get_experiment(user)
 
-        if not e :
+        if not e:
             e = Experiment()
-            e.user                  = user
-            #e.task_type             = Experiment.EXPLORATORY
-            #e.study_type            = 1 # full system
-            #e.base_exploration_rate = 1.0
-            e.exploration_rate       = 1.0
-            e.number_of_documents    = num_articles
-            e.query                  = query_string
-            e.from_date              = from_year
-            e.to_date                = to_year
+            e.user = user
+            # e.task_type             = Experiment.EXPLORATORY
+            # e.study_type            = 1 # full system
+            # e.base_exploration_rate = 1.0
+            e.exploration_rate = 1.0
+            e.number_of_documents = num_articles
+            e.query = query_string
+            e.from_date = from_year
+            e.to_date = to_year
             e.save()
 
-        #e.query = query_string
-        #e.number_of_documents = num_articles
-        #e.from_date = from_year
-        #e.to_date = to_year
+        # e.query = query_string
+        # e.number_of_documents = num_articles
+        # e.from_date = from_year
+        # e.to_date = to_year
 
-        try :
+        try:
             # get documents with okapi bm25-based ranking
             topic_articles = get_articles("bm25", e, 0, num_topic_articles)
-        
-        except PulpException, pe :
+
+        except PulpException, pe:
             print "ERROR", str(pe)
             return Response(status=status.HTTP_400_BAD_REQUEST)
-        
+
         num_articles = e.number_of_documents
         articles = topic_articles[:num_articles]
 
         # add random articles if we don't have enough
         fill_count = num_articles - len(articles)
-        if fill_count :
+        if fill_count:
             print "only %d articles found, adding %d random ones" % (len(articles), fill_count)
             articles += random.sample(Article.objects.all(), fill_count)
 
@@ -512,34 +531,37 @@ def textual_query(request) :
         e.save()
 
         serializer = ArticleSerializer(articles, many=True)
-        return Response({ 'articles' : serializer.data,
-                          'topics'   : get_topics(topic_articles)})
+        return Response({'articles': serializer.data,
+                         'topics': get_topics(topic_articles)})
 
-def store_feedback(e, post) :
+
+def store_feedback(e, post):
     ei = get_last_iteration(e)
-    selected_documents = [ int(i) for i in post['selected'] ]
+    selected_documents = [int(i) for i in post['selected']]
     print selected_documents
 
-#    if ei.iteration == 0 :
-#        print "exploratory = '%s'" % post.get('exploratory', 0)
-#        #e.classifier = int(post.get('exploratory', 0)) == 1
-#        e.classifier = True
-#
-#        if e.classifier and e.study_type == 1 :
-#            print "USING EXPLORATION (classifier = %s, study_type = %s)" % (str(e.classifier), 'full' if e.study_type == 1 else 'baseline')
-#            e.exploration_rate = e.base_exploration_rate
-#        else :
-#            print "NOT USING EXPLORATION (classifier = %s, study_type = %s)" % (str(e.classifier), 'full' if e.study_type == 1 else 'baseline')
-#
-#    print "exploration rate set to %.2f" % e.exploration_rate
+    #    if ei.iteration == 0 :
+    #        print "exploratory = '%s'" % post.get('exploratory', 0)
+    #        #e.classifier = int(post.get('exploratory', 0)) == 1
+    #        e.classifier = True
+    #
+    #        if e.classifier and e.study_type == 1 :
+    #            print "USING EXPLORATION (classifier = %s, study_type = %s)"
+    #                   % (str(e.classifier), 'full' if e.study_type == 1 else 'baseline')
+    #            e.exploration_rate = e.base_exploration_rate
+    #        else :
+    #            print "NOT USING EXPLORATION (classifier = %s, study_type = %s)"
+    #                   % (str(e.classifier), 'full' if e.study_type == 1 else 'baseline')
+    #
+    #    print "exploration rate set to %.2f" % e.exploration_rate
 
     # add selected documents to previous experiment iteration
     add_feedback(ei, selected_documents, post['clicked'], post['seen'])
 
-@api_view(['POST'])
-def selection_query(request) :
 
-    if request.method == 'POST' :
+@api_view(['POST'])
+def selection_query(request):
+    if request.method == 'POST':
         post = json.loads(request.body)
 
         print json.dumps(post, sort_keys=True, indent=4, separators=(',', ': '))
@@ -547,83 +569,82 @@ def selection_query(request) :
         start_time = time.time()
 
         # get user object
-        if ('participant_id' in post) and post['participant_id'] :
+        if ('participant_id' in post) and post['participant_id']:
             participant_id = post['participant_id']
-        else :
+        else:
             participant_id = request.session.session_key
-                    
+
         print "participant =", participant_id
 
-        try :
+        try:
             user = User.objects.get(username=participant_id)
 
-        except User.DoesNotExist :
+        except User.DoesNotExist:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
         # get experiment object
         e = get_experiment(user)
 
-        try :
+        try:
             store_feedback(e, post)
 
-        except Exception :
+        except Exception:
             return Response(status=status.HTTP_400_BAD_REQUEST)
-
 
         num_topic_articles = int(request.GET.get('topic-count', 100))
 
-        if num_topic_articles < e.number_of_documents :
+        if num_topic_articles < e.number_of_documents:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
-#        # get previous experiment iteration
-#        try :
-#            ei = get_last_iteration(e)
-#
-#        except ExperimentIteration.DoesNotExist :
-#            return Response(status=status.HTTP_400_BAD_REQUEST)
-#
-#        # get parameters from url
-#        # ?id=x&id=y&id=z
-#        try :
-#            selected_documents = [ int(i) for i in post['selected'] ]
-#
-#        except ValueError :
-#            return Response(status=status.HTTP_400_BAD_REQUEST)
-#
-#        print selected_documents
-#
-#        # only sent in iteration 1
-#        if ei.iteration == 0 :
-#            try :
-#                print "exploratory =", post['exploratory']
-#                apply_exploration = post['exploratory'] == "1"
-#
-#            except :
-#                return Response(status=status.HTTP_400_BAD_REQUEST)
-#
-#            if apply_exploration :
-#                e.exploration_rate = e.base_exploration_rate
-#
-#        print "exploration rate set to %.2f" % e.exploration_rate
-#
-#        # add selected documents to previous experiment iteration
-#        add_feedback(ei, selected_documents, post['clicked'], post['seen'])
-
+        #        # get previous experiment iteration
+        #        try :
+        #            ei = get_last_iteration(e)
+        #
+        #        except ExperimentIteration.DoesNotExist :
+        #            return Response(status=status.HTTP_400_BAD_REQUEST)
+        #
+        #        # get parameters from url
+        #        # ?id=x&id=y&id=z
+        #        try :
+        #            selected_documents = [ int(i) for i in post['selected'] ]
+        #
+        #        except ValueError :
+        #            return Response(status=status.HTTP_400_BAD_REQUEST)
+        #
+        #        print selected_documents
+        #
+        #        # only sent in iteration 1
+        #        if ei.iteration == 0 :
+        #            try :
+        #                print "exploratory =", post['exploratory']
+        #                apply_exploration = post['exploratory'] == "1"
+        #
+        #            except :
+        #                return Response(status=status.HTTP_400_BAD_REQUEST)
+        #
+        #            if apply_exploration :
+        #                e.exploration_rate = e.base_exploration_rate
+        #
+        #        print "exploration rate set to %.2f" % e.exploration_rate
+        #
+        #        # add selected documents to previous experiment iteration
+        #        add_feedback(ei, selected_documents, post['clicked'], post['seen'])
 
         # ver.1
-        #rand_articles, keywords, article_stats, stems = get_top_articles_linrel(e, 0, e.number_of_documents, e.exploration_rate)
+        # rand_articles, keywords, article_stats, stems = get_top_articles_linrel(e, 0, e.number_of_documents, e.exploration_rate)
 
         # ver.2
-        #topic_articles, keywords, article_stats, stems = get_top_articles_linrel(e, 0, num_topic_articles, e.exploration_rate)
-        #rand_articles = topic_articles[:e.number_of_documents]
+        # topic_articles, keywords, article_stats, stems = get_top_articles_linrel(e, 0, num_topic_articles, e.exploration_rate)
+        # rand_articles = topic_articles[:e.number_of_documents]
 
         # ver.3
         print "exploration rate = %f" % e.exploration_rate
-        try :
-            topic_articles, keywords, article_stats, stems = get_top_articles_linrel(e, 0, num_topic_articles, e.exploration_rate)
+        try:
+            topic_articles, keywords, article_stats, stems = get_top_articles_linrel(e, 0, num_topic_articles,
+                                                                                     e.exploration_rate)
             rand_articles = topic_articles[:e.number_of_documents]
 
-        except PulpException, pe :
+        except PulpException, pe:
             print "ERROR", str(pe)
 
             # an exception was thrown because we need feedback on at least two
@@ -643,9 +664,9 @@ def selection_query(request) :
 
             print "returning %d articles" % len(rand_articles)
 
-            return Response({'articles' : serializer.data,
-                             'keywords' : {},
-                             'topics'   : get_topics(topic_articles)})
+            return Response({'articles': serializer.data,
+                             'keywords': {},
+                             'topics': get_topics(topic_articles)})
 
         print "%d articles (%s)" % (len(rand_articles), ','.join([str(a.id) for a in rand_articles]))
 
@@ -658,30 +679,31 @@ def selection_query(request) :
         # response to client
         serializer = ArticleSerializer(rand_articles, many=True)
         article_data = serializer.data
-        for i in article_data :
-            mean,var = article_stats[i['id']]
+        for i in article_data:
+            mean, var = article_stats[i['id']]
             i['mean'] = mean
             i['variance'] = var
 
         print time.time() - start_time
 
-        return Response({'articles' : article_data,
-                         'keywords' : keywords,
-                         'topics'   : get_topics(topic_articles)})
+        return Response({'articles': article_data,
+                         'keywords': keywords,
+                         'topics': get_topics(topic_articles)})
+
 
 @api_view(['GET'])
-def system_state(request) :
+def system_state(request):
     return Response(status=status.HTTP_404_NOT_FOUND)
 
-    if request.method == 'GET' :
+    if request.method == 'GET':
         e = get_experiment(request.session.session_key)
-        try :
+        try:
             start = int(request.GET['start'])
             count = int(request.GET['count'])
 
-        except KeyError :
+        except KeyError:
             return Response(status=status.HTTP_404_NOT_FOUND)
-        except ValueError :
+        except ValueError:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
         print "start = %d, count = %d" % (start, count)
@@ -689,78 +711,81 @@ def system_state(request) :
         articles, keyword_stats, article_stats, stems = get_top_articles_linrel(e, start, count, e.exploration_rate)
         serializer = ArticleSerializer(articles, many=True)
 
-        for i in serializer.data :
+        for i in serializer.data:
             i['stemming'] = stems[i['id']]
 
-        return Response({'article_data' : article_stats,
-                         'keywords'     : keyword_stats,
-                         'all_articles' : serializer.data })
+        return Response({'article_data': article_stats,
+                         'keywords': keyword_stats,
+                         'all_articles': serializer.data})
+
 
 @api_view(['POST'])
-def end_search(request) :
-    if request.method == 'POST' :
+def end_search(request):
+    if request.method == 'POST':
         post = json.loads(request.body)
 
-        if 'participant_id' not in post :
+        if 'participant_id' not in post:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
         participant_id = post['participant_id']
 
-        try :
+        try:
             user = User.objects.get(username=participant_id)
 
-        except User.DoesNotExist :
+        except User.DoesNotExist:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
         e = get_experiment(user)
 
-        try :
+        try:
             store_feedback(e, post)
 
-        except :
+        except:
             return Response(status=status.HTTP_400_BAD_REQUEST)
-
 
         e.state = Experiment.COMPLETE
         e.save()
 
         return Response(status=status.HTTP_200_OK)
 
+
 @api_view(['GET'])
-def index(request) :
+def index(request):
     return render(request, 'index.html')
 
-@api_view(['GET'])
-def visualization(request) :
-    return render(request, 'visualization.html')
 
 @api_view(['GET'])
-def setup_experiment(request) :
+def visualization(request):
+    return render(request, 'visualization.html')
+
+
+@api_view(['GET'])
+def setup_experiment(request):
     # /setup?participant_id=1234&task_type=0&exploration_rate=1&task_order=1
 
     print json.dumps(request.GET, sort_keys=True, indent=4, separators=(',', ': '))
 
-    try :
-        participant_id      = request.GET['participant_id']
-#        experiment_id       = int(request.GET['experiment_id'])
-#        task_type           = int(request.GET['task_type'])
-        exploration_rate    = float(request.GET['exploration_rate'])
-        num_documents       = int(request.GET['article_count'])
-        query               = request.GET['q']
+    try:
+        participant_id = request.GET['participant_id']
+        #        experiment_id       = int(request.GET['experiment_id'])
+        #        task_type           = int(request.GET['task_type'])
+        exploration_rate = float(request.GET['exploration_rate'])
+        num_documents = int(request.GET['article_count'])
+        query = request.GET['q']
 
-    except :
+    except:
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
-#    if task_type not in (0, 1) :
-#        return Response(status=status.HTTP_400_BAD_REQUEST)
+    #    if task_type not in (0, 1) :
+    #        return Response(status=status.HTTP_400_BAD_REQUEST)
 
-    if exploration_rate < 0.0 or num_documents < 1 or query == "" :
+    if exploration_rate < 0.0 or num_documents < 1 or query == "":
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
-    try :
+    try:
         user = User.objects.get(username=participant_id)
 
-    except User.DoesNotExist :
+    except User.DoesNotExist:
         user = User()
         user.username = participant_id
         user.save()
@@ -771,27 +796,29 @@ def setup_experiment(request) :
 
     # create experiment
     e = Experiment()
-    e.user                  = user
-    #e.task_type             = Experiment.EXPLORATORY #if task_type == 0 else Experiment.LOOKUP
-    #e.study_type            = 0 #experiment_id
-    #e.number_of_documents   = DEFAULT_NUM_ARTICLES
-    #e.base_exploration_rate = exploration_rate
+    e.user = user
+    # e.task_type             = Experiment.EXPLORATORY #if task_type == 0 else Experiment.LOOKUP
+    # e.study_type            = 0 #experiment_id
+    # e.number_of_documents   = DEFAULT_NUM_ARTICLES
+    # e.base_exploration_rate = exploration_rate
     e.exploration_rate = exploration_rate
     e.number_of_documents = num_documents
     e.query = query
     e.save()
 
-    #print "STUDY TYPE: %s" % ("full system" if e.study_type == 1 else "baseline")
-    #print "TASK TYPE: %s" % ("exploratory" if e.task_type == Experiment.EXPLORATORY else "lookup")
-    #print "EXPLORATION RATE: %.2f" % e.base_exploration_rate
+    # print "STUDY TYPE: %s" % ("full system" if e.study_type == 1 else "baseline")
+    # print "TASK TYPE: %s" % ("exploratory" if e.task_type == Experiment.EXPLORATORY else "lookup")
+    # print "EXPLORATION RATE: %.2f" % e.base_exploration_rate
 
     return Response(status=status.HTTP_200_OK)
+
 
 @api_view(['POST'])
 def experiment_ratings(request):
     ratings = json.loads(request.body)
 
-    if('participant_id' not in ratings or 'task_type' not in ratings or 'study_type' not in ratings or 'ratings' not in ratings or 'classifier_value' not in ratings or 'query' not in ratings):
+    if ('participant_id' not in ratings or 'task_type' not in ratings or 'study_type' not in ratings
+            or 'ratings' not in ratings or 'classifier_value' not in ratings or 'query' not in ratings):
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
     ratings_file = open(os.path.dirname(__file__) + '/../ratings.json', 'r')
@@ -800,7 +827,7 @@ def experiment_ratings(request):
 
     ratings_file = open(os.path.dirname(__file__) + '/../ratings.json', 'w')
 
-    if(not ratings_arr):
+    if not ratings_arr :
         ratings_arr = []
     else:
         ratings_arr = json.loads(ratings_arr)
@@ -819,74 +846,75 @@ def experiment_ratings(request):
 
     return Response(status=status.HTTP_200_OK)
 
-def get_topics(articles, normalise=True) :
-    return [] # XXX
 
+def get_topics(articles, normalise=True):
+    # return [] # XXX
     result = []
 
-    for a in articles :
+    for a in articles:
         tmp = {
-            'article_id'    : a.id,
-            'topics'        : []
-          }
+            'article_id': a.id,
+            'topic_dist': []
+        }
+        try:
+            for tw in TopicWeight.objects.filter(article=a):
+                tmp['topic_dist'].append({
+                    'label': tw.topic.label,
+                    'num': tw.topic.num,
+                    'weight': tw.weight
+                })
+        except:
+            print 'no topics for article %s' % a
 
-        for tw in TopicWeight.objects.filter(article=a) :
-            tmp['topics'].append({
-                'label'     : tw.topic.label,
-                'weight'    : tw.weight
-              })
-
-        if normalise :
-            weight_sum = sum([ t['weight'] for t in tmp['topics'] ])
-            for t in tmp['topics'] :
-                t['weight'] /= weight_sum
-
+        if normalise:
+            weight_sum = sum([t['weight'] for t in tmp['topic_dist']])
+            for t in tmp['topic_dist']:
+                t['weight'] /= (weight_sum / 100)
+                t['weight'] = float("{0:.4f}".format(t['weight']))
         result.append(tmp)
-
     return result
 
+
 @api_view(['GET'])
-def topics(request) :
-    #/topics?from=0&to=100&participant_id=1
+def topics(request):
+    # /topics?from=0&to=100&participant_id=1
     print json.dumps(request.GET, sort_keys=True, indent=4, separators=(',', ': '))
 
-    try :
+    try:
         from_article = int(request.GET['from'])
         to_article = int(request.GET['to'])
         normalise = int(request.GET.get('normalise', 1))
         participant_id = request.GET['participant_id']
 
-        if not participant_id :
+        if not participant_id:
             participant_id = request.session.session_key
 
-    except :
+    except:
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
-    if to_article <= from_article :
+    if to_article <= from_article:
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
-    try :
+    try:
         user = User.objects.get(username=participant_id)
 
-    except User.DoesNotExist :
+    except User.DoesNotExist:
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
     e = get_experiment(user)
 
     print "#iterations =", e.number_of_iterations
 
-    if e.number_of_iterations == 0 :
+    if e.number_of_iterations == 0:
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
-    if e.number_of_iterations == 1 :
-        articles = get_articles("bm25", e, from_article, to_article - from_article) 
+    if e.number_of_iterations == 1:
+        articles = get_articles("bm25", e, from_article, to_article - from_article)
         return Response(get_topics(articles, normalise))
 
-
     articles, keyword_stats, article_stats, stems = get_top_articles_linrel(e,
-                                                                     from_article,
-                                                                     to_article - from_article,
-                                                                     e.exploration_rate)
+                                                                            from_article,
+                                                                            to_article - from_article,
+                                                                            e.exploration_rate)
 
     return Response(get_topics(articles, normalise))
-
