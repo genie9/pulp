@@ -1,4 +1,4 @@
-<div id="topic-tooltip"></div>
+<div id="topic-tooltip" xmlns="http://www.w3.org/1999/html"></div>
 
 <!-- ARTICLE VIEW -->
 <div id="article-view-container" ng-show="viewed_article">
@@ -145,9 +145,10 @@
                         <h3 class="heading-minor text-center">Topics</h3>
 
                         <div class="progress" ng-repeat="art in topics" ng-if="art.article_id==result.id">
-                            <a ng-repeat="tw in art.topic_dist" target="_blank" class="progress-bar"
-                               ng-style="{'width': transformers(tw.weight), 'background-color': pick_color($index)}">{{ tw.weight }}
-                            </a>
+                            <div id="topic" ng-repeat="tw in art.topic_dist" target="_blank" class="progress-bar"
+                                 ng-style="{'width': transformers(tw.weight), 'background-color': pick_color($index)}" title="{{tw.label}}"> {{ tw.weight }}%
+                            </div>
+
                             <!--<a ng-href="#topic/1" target="_blank" class="progress-bar progress-bar-yellow" ng-style="{ 'width': '20%' }">
                               Programming
                             </a>

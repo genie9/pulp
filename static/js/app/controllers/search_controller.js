@@ -49,16 +49,16 @@ SearchApp.controller("SearchController", ["$scope", "$rootScope", "$sce", "$loca
 
     $scope.pick_color = function (ind) {
         // there's only 14 colors. if more topics in progress bar, add more colors
-        var colors = ["#7fdfc6","#ebaf95","#d0fab7","#99a7dd","#cf94a4","#ef8be3","#c58784","#b7c6b5","#e7f9b1","#c3aff1","#84c7b0","#f88bcb","#dffeca","#859dce"]
+        var colors = ["#7B241C","#CB4335","#884EA0","#1F618D","#2E86C1","#17A589","#1E8449","#D4AC0D","#D68910","#BA4A00","#c3aff1","#84c7b0","#f88bcb","#dffeca","#859dce"]
         return colors[ind];
     }
 
     $scope.keys2string = function (key_array) {
-        var key_string = ''
-        for (i in key_array) {
-            key_string += i+'\n'
+        var key_string = '';
+        for (var i in key_array) {
+            key_string += (key_array[i]+'\n');
         }
-        return key_string
+        return key_string;
     }
 
     $scope.toggle_bookmark_history = function () {

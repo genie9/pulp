@@ -641,17 +641,6 @@ a.progress-bar {
     background-color: #46BFBD;
 }
 
-.tooltip {
-    border: 1px solid black;
-    width: 230px;
-    margin-left: 58px;
-    margin-top: -35px;
-    background-color: antiquewhite;
-    border-radius: 4px;
-    height: 20px;
-    color: darkslategray;
-}
-
 .abstract-highlights-container {
     position: fixed;
     width: 100%;
