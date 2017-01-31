@@ -53,14 +53,6 @@ SearchApp.controller("SearchController", ["$scope", "$rootScope", "$sce", "$loca
         return colors[ind];
     }
 
-    $scope.keys2string = function (key_array) {
-        var key_string = '';
-        for (var i in key_array) {
-            key_string += (key_array[i]+'\n');
-        }
-        return key_string;
-    }
-
     $scope.toggle_bookmark_history = function () {
         $scope.bookmark_history_showing = !$scope.bookmark_history_showing;
     }

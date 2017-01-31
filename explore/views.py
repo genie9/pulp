@@ -596,7 +596,7 @@ def selection_query(request):
         if num_topic_articles < e.number_of_documents:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
-        #        # get previous experiment iteration
+        # # get previous experiment iteration
         #        try :
         #            ei = get_last_iteration(e)
         #
@@ -776,7 +776,7 @@ def setup_experiment(request):
     except:
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
-    #    if task_type not in (0, 1) :
+    # if task_type not in (0, 1) :
     #        return Response(status=status.HTTP_400_BAD_REQUEST)
 
     if exploration_rate < 0.0 or num_documents < 1 or query == "":
@@ -818,7 +818,7 @@ def experiment_ratings(request):
     ratings = json.loads(request.body)
 
     if ('participant_id' not in ratings or 'task_type' not in ratings or 'study_type' not in ratings
-            or 'ratings' not in ratings or 'classifier_value' not in ratings or 'query' not in ratings):
+        or 'ratings' not in ratings or 'classifier_value' not in ratings or 'query' not in ratings):
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
     ratings_file = open(os.path.dirname(__file__) + '/../ratings.json', 'r')
@@ -827,7 +827,7 @@ def experiment_ratings(request):
 
     ratings_file = open(os.path.dirname(__file__) + '/../ratings.json', 'w')
 
-    if not ratings_arr :
+    if not ratings_arr:
         ratings_arr = []
     else:
         ratings_arr = json.loads(ratings_arr)
@@ -859,7 +859,7 @@ def get_topics(articles, normalise=True):
         try:
             for tw in TopicWeight.objects.filter(article=a):
                 tmp['topic_dist'].append({
-                    'label': tw.topic.label,
+                    'label': '\n'.join(tw.topic.label.split(',')),
                     'num': tw.topic.num,
                     'weight': tw.weight
                 })
