@@ -22,7 +22,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView  # class-based views
 from rest_framework.decorators import api_view  # for function-based views
 
-from explore.models import Article, ArticleTFIDF, Experiment, ExperimentIteration, ArticleFeedback, User, TopicWeight
+from explore.models import Article, ArticleTFIDF, Experiment, ExperimentIteration, ArticleFeedback, User, TopicWeight, \
+    ArticleSection
 from explore.serializers import ArticleSerializer
 from explore.utils import *
 
@@ -532,6 +533,7 @@ def textual_query(request):
 
         serializer = ArticleSerializer(articles, many=True)
         return Response({'articles': serializer.data,
+                         'sections': get_sections(topic_articles),
                          'topics': get_topics(topic_articles, False)})
 
 
@@ -666,6 +668,7 @@ def selection_query(request):
 
             return Response({'articles': serializer.data,
                              'keywords': {},
+                             'sections': get_sections(topic_articles),
                              'topics': get_topics(topic_articles)})
 
         print "%d articles (%s)" % (len(rand_articles), ','.join([str(a.id) for a in rand_articles]))
@@ -688,6 +691,7 @@ def selection_query(request):
 
         return Response({'articles': article_data,
                          'keywords': keywords,
+                         'sections': get_sections(topic_articles),
                          'topics': get_topics(topic_articles, False)})
 
 
@@ -818,7 +822,7 @@ def experiment_ratings(request):
     ratings = json.loads(request.body)
 
     if ('participant_id' not in ratings or 'task_type' not in ratings or 'study_type' not in ratings
-        or 'ratings' not in ratings or 'classifier_value' not in ratings or 'query' not in ratings):
+            or 'ratings' not in ratings or 'classifier_value' not in ratings or 'query' not in ratings):
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
     ratings_file = open(os.path.dirname(__file__) + '/../ratings.json', 'r')
@@ -847,6 +851,29 @@ def experiment_ratings(request):
     return Response(status=status.HTTP_200_OK)
 
 
+# added by genie
+def get_sections(articles):
+    result = []
+
+    # sections = ArticleSection.objects.
+    for a in articles:
+        tmp = {
+            'article_id': a.id,
+            'sections': []
+        }
+        try:
+            for sec in ArticleSection.objects.filter(a):
+                tmp['sections'].append({
+                    'num': sec.num,
+                    'title': sec.title,
+                    'topics': get_sec_topics(sec)
+                })
+        except:
+            print 'no sections for article %s' % a
+            continue
+    return result
+
+
 def get_topics(articles, normalise=True):
     # return [] # XXX
     result = []
@@ -865,18 +892,48 @@ def get_topics(articles, normalise=True):
                 })
         except:
             print 'no topics for article %s' % a
+            continue
 
         if normalise:
             weight_sum = sum([t['weight'] for t in tmp['topic_dist']])
             for t in tmp['topic_dist']:
                 t['weight'] /= (weight_sum / 100)
                 t['weight'] = float("{0:.4f}".format(t['weight']))
-        else :
+        else:
             for t in tmp['topic_dist']:
                 t['weight'] *= 100
                 t['weight'] = float("{0:.2f}".format(t['weight']))
         result.append(tmp)
     return result
+
+
+def get_sec_topics(sec, normalise=True):
+    result = []
+    try:
+        for tw in TopicWeight.objects.filter(section=sec):
+            result.append({
+                'label': '\n'.join(tw.topic.label.split(',')),
+                'num': tw.topic.num,
+                'weight': tw.weight
+            })
+    except:
+        print 'no topics for section %s' % sec
+
+    if normalise:
+        weight_sum = sum([t['weight'] for t in result])
+        for t in result:
+            t['weight'] /= (weight_sum / 100)
+            t['weight'] = float("{0:.4f}".format(t['weight']))
+    else:
+        for t in result:
+            t['weight'] *= 100
+            t['weight'] = float("{0:.2f}".format(t['weight']))
+
+    return result
+
+
+# def tw2pros(tw, normalise=True) :
+# return tw
 
 
 @api_view(['GET'])
