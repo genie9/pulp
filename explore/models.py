@@ -22,9 +22,10 @@ class Topic(models.Model) :
     # added by genie
     num       = models.IntegerField()  # could be topic id
 
-#class TopicKeyword(models.Model) :
+# class TopicKeyword(models.Model) :
 #    topic    = models.ForeignKey(Topic)
 #    keyword  = models.CharField(max_length=128)
+
 
 class Article(models.Model) :
     title    = models.CharField(max_length=200)
@@ -38,6 +39,7 @@ class Article(models.Model) :
     def __unicode__(self) :
         return u'%s %s' % (self.__class__.__name__, self.title)
 
+
 class ArticleTFIDF(models.Model) :
     article = models.ForeignKey(Article)
     term    = models.CharField(max_length=32)
@@ -46,10 +48,22 @@ class ArticleTFIDF(models.Model) :
     def __unicode__(self) :
         return u'%s %s %.3f' % (self.__class__.__name__, self.term, self.value)
 
-class TopicWeight(models.Model) :
-    topic    = models.ForeignKey(Topic)
+
+# added by genie
+class ArticleSection(models.Model) :
     article  = models.ForeignKey(Article)
-    weight   = models.FloatField(default=0.0)
+    num      = models.IntegerField()
+    title    = models.CharField(max_length=200)
+    # meaning abstract, introduction, conclusion, middlesections??
+    position = models.CharField(max_length=64)
+
+
+class TopicWeight(models.Model) :
+    topic   = models.ForeignKey(Topic)
+    article = models.ForeignKey(Article)
+    section = models.ForeignKey(ArticleSection)
+    weight  = models.FloatField(default=0.0)
+
 
 class User(models.Model) :
     username = models.CharField(max_length=100, blank=False)

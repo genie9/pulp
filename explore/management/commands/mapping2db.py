@@ -19,6 +19,7 @@ from django.db import transaction
 from explore.models import Topic, Article, TopicWeight
 from sys import stderr, exit
 
+
 class Command(BaseCommand) :
     args = '<topic mapping file>'
     help = 'loads document to topic mapping file into DB'

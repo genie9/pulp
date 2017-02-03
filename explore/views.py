@@ -532,7 +532,7 @@ def textual_query(request):
 
         serializer = ArticleSerializer(articles, many=True)
         return Response({'articles': serializer.data,
-                         'topics': get_topics(topic_articles)})
+                         'topics': get_topics(topic_articles, False)})
 
 
 def store_feedback(e, post):
@@ -688,7 +688,7 @@ def selection_query(request):
 
         return Response({'articles': article_data,
                          'keywords': keywords,
-                         'topics': get_topics(topic_articles)})
+                         'topics': get_topics(topic_articles, False)})
 
 
 @api_view(['GET'])
@@ -871,6 +871,10 @@ def get_topics(articles, normalise=True):
             for t in tmp['topic_dist']:
                 t['weight'] /= (weight_sum / 100)
                 t['weight'] = float("{0:.4f}".format(t['weight']))
+        else :
+            for t in tmp['topic_dist']:
+                t['weight'] *= 100
+                t['weight'] = float("{0:.2f}".format(t['weight']))
         result.append(tmp)
     return result
 

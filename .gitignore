@@ -3,7 +3,7 @@
 *swp
 node_modules/
 server.sh
-*db.*
+*db.sqlite3*
 *db_*
 *.txt
 *.idea
