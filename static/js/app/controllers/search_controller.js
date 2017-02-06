@@ -26,6 +26,7 @@ SearchApp.controller("SearchController", ["$scope", "$rootScope", "$sce", "$loca
             .success(function (response) {
                 $scope.results = response.articles;
                 $scope.topics = response.topics;
+                $scope.sections = response.sections;
                 $scope.visualization_data = {topics: response.topics, append: false};
                 $scope.search_heading = $scope.search_keyword;
 
