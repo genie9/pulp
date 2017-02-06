@@ -43,15 +43,13 @@ class Command(BaseCommand):
         # filling ArticleSection table of DB
         print >> stderr, "reading %s ..." % title_file  # args[0]
 
-        with open(title_file) as tf :
+        with open(title_file) as tf:
             linenum = 0
             saved = 0
             not_count = 0
 
-            section = ArticleSection()
-
-            with transaction.atomic() :
-                for line in tf :
+            with transaction.atomic():
+                for line in tf:
                     linenum += 1
 
                     line = line.strip()
@@ -59,28 +57,32 @@ class Command(BaseCommand):
                         not_count += 1
                         continue
 
-                    try :
+                    try:
                         article, title = line.split(',', 1)
-                    except ValueError :
-                        print >> stderr, "Error: wrong number of tokens, line %d tokens. %s" % (linenum, line)
+                    except ValueError:
+                        print >> stderr, "Error: wrong number of tokens in read line, line %d tokens. %s" \
+                                         % (linenum, line)
                         continue
 
-                    try :
+                    try:
                         arx_num, sec_num = article.split('_')
-                    except ValueError :
-                        print >> stderr, "Error: wrong number of tokens, line %d tokens: %s" % (linenum, article)
+                    except ValueError:
+                        print >> stderr, "Error: wrong number of tokens in section number, line %d tokens: %s" \
+                                         % (linenum, article)
                         continue
 
                     # arx_num = art_sec[0]
                     # sec_num = art_sec[1]
                     # title = data[1]
 
-                    try :
+                    try:
                         a = articles.get(arxivid=arx_num)
-                        print 'article %s section %s' % (a,title)
-                    except :
-                        print 'article %s not in section list, going to next one' % arx_num
+                        print 'article %s section %s' % (a, title)
+                    except:
+                        print >> stderr, 'article %s from sections list not found in article table, going to next one' % arx_num
                         continue
+
+                    section = ArticleSection()
 
                     section.num = int(sec_num)
                     section.article = a
@@ -88,7 +90,7 @@ class Command(BaseCommand):
 
                     section.save()
 
-                    if sec_num == '0' :
+                    if sec_num == '0':
                         saved += 1
                     if (saved % 100) == 0:
                         self.stderr.write("saved %d sections for %d articles" % (linenum, saved))
@@ -96,4 +98,4 @@ class Command(BaseCommand):
         section_count = ArticleSection.objects.count()
         if section_count != (linenum - not_count):
             print >> stderr, "Warning: Different number of sections between file and DB! Read lines %d, DB entries %d" \
-                             % (linenum-not_count, section_count)
+                  % (linenum - not_count, section_count)

@@ -90,9 +90,9 @@ class Command(BaseCommand):
                     dist = map(float, data[2::])
                     top_ind = sorted(range(len(dist)), key=lambda k: dist[k], reverse=True)[0:NUM_TOPICS_TO_STORE]
 
-                    tw = TopicWeight()
-
                     for i in range(len(top_ind)):
+                        tw = TopicWeight()
+
                         tw.section = s
                         tw.topic = topics.get(num=top_ind[i])  # topics[top_ind[i]]
                         tw.weight = dist[top_ind[i]]  # float(data[i+1])
