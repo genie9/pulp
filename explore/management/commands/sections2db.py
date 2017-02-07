@@ -71,9 +71,8 @@ class Command(BaseCommand):
                                          % (linenum, article)
                         continue
 
-                    # arx_num = art_sec[0]
-                    # sec_num = art_sec[1]
-                    # title = data[1]
+                    if arx_num.find('cs') != -1 :
+                        arx_num = 'cs/'.join(arx_num.split('cs')[1])
 
                     try:
                         a = articles.get(arxivid=arx_num)

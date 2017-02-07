@@ -74,6 +74,7 @@ class Command(BaseCommand) :
                     # a = articles[int(data[0])]
 
                     arx_num = data[1].split('/')[-1].split('.txt')[0]
+
                     try :
                         a = articles.get(arxivid=arx_num)
                         print a

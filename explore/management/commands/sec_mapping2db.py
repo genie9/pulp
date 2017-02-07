@@ -76,12 +76,12 @@ class Command(BaseCommand):
                         print >> stderr, "Error: wrong number of tokens, line %d tokens: %s" % (linenum, data[1])
                         continue
 
-                    # arx_num = data[1].split('/')[-1].split('.txt')[0].split('_')[0]
-                    # sec_num = data[1].split('/')[-1].split('.txt')[0].split('_')[1]
+                    if arx_num.find('cs') != -1 :
+                        arx_num = 'cs/'.join(arx_num.split('cs')[1])
 
                     try:
-                        s = sections.get(articles=articles.get(arxivid=arx_num), num=sec_num)
-                        print s
+                        s = sections.get(article_id=articles.get(arxivid=arx_num).id, num=sec_num)
+                        print s.id
                     except:
                         print 'Warning: article %s not in topic list, going to next one' % arx_num
                         continue
