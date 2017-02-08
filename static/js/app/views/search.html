@@ -156,21 +156,23 @@
                     </div>
 
                     <!-- sections bar -->
-                    <div class="col-lg-3">
-                        <div class="progress" ng-repeat="section in sections" ng-if="section.article_id==result.id ">
-                            <div ng-if="section.title!='abstr' && section.title.lowercase().indexOf('concl') > -1
-                                    && section.title.lowercase().indexOf('intro') > -1">
-                                <p>{{ section.title }}</p>
-                                <div id="topic" ng-repeat="tw in section.topics" target="_blank" class="progress-bar"
-                                     ng-style="{'width': transformers(tw.weight), 'background-color': pick_color($index)}"
-                                     title="{{ tw.label }}"> {{ tw.weight }}%
-                                </div>
-                                <!--<div class="progress progress-bar-vertical">
-                                    <div class="progress-bar" role="progressbar" aria-valuenow="30" aria-valuemin="0"
-                                         aria-valuemax="100" style="height: 30%;">
-                                        <span class="sr-only">30% Complete</span>
+                    <div class="col-lg-3"> 
+                        <div ng-repeat="a in sections" ng-if="a.article_id==result.id ">
+                            <div ng-repeat="section in a.sections" ng-if="section.title != 'abstr' && section.title.toLowerCase().indexOf('concl') == -1
+                                     && section.title.toLowerCase().indexOf('intro') == -1">
+                                <span>{{ section.title }}</span>
+                                <div class="progress">
+                                    <div ng-repeat="tw in section.topics" target="_blank" class="progress-bar"
+                                         ng-style="{'width': transformers(tw.weight), 'background-color': pick_color($index)}"
+                                         title="{{ tw.label }}"> {{ tw.weight }}%
                                     </div>
-                                </div>-->
+                                    <!--<div class="progress progress-bar-vertical">
+                                        <div class="progress-bar" role="progressbar" aria-valuenow="30" aria-valuemin="0"
+                                             aria-valuemax="100" style="height: 30%;">
+                                            <span class="sr-only">30% Complete</span>
+                                        </div>
+                                    </div>-->
+                                </div>
                             </div>
                         </div>
                     </div>

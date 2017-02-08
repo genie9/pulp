@@ -860,9 +860,9 @@ def get_sections(articles):
         tmp = {
             'article_id': a.id,
             'sections': []
-        }
+        } 
         try:
-            for sec in ArticleSection.objects.filter(a):
+            for sec in ArticleSection.objects.filter(article=a):
                 tmp['sections'].append({
                     'num': sec.num,
                     'title': sec.title,
@@ -871,6 +871,7 @@ def get_sections(articles):
         except:
             print 'no sections for article %s' % a
             continue
+        result.append(tmp)
     return result
 
 
@@ -898,7 +899,7 @@ def get_topics(articles, normalise=True):
             weight_sum = sum([t['weight'] for t in tmp['topic_dist']])
             for t in tmp['topic_dist']:
                 t['weight'] /= (weight_sum / 100)
-                t['weight'] = float("{0:.4f}".format(t['weight']))
+                t['weight'] = float("{0:.2f}".format(t['weight']))
         else:
             for t in tmp['topic_dist']:
                 t['weight'] *= 100
@@ -923,7 +924,7 @@ def get_sec_topics(sec, normalise=True):
         weight_sum = sum([t['weight'] for t in result])
         for t in result:
             t['weight'] /= (weight_sum / 100)
-            t['weight'] = float("{0:.4f}".format(t['weight']))
+            t['weight'] = float("{0:.2f}".format(t['weight']))
     else:
         for t in result:
             t['weight'] *= 100
