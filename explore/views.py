@@ -534,7 +534,7 @@ def textual_query(request):
         serializer = ArticleSerializer(articles, many=True)
         return Response({'articles': serializer.data,
                          'sections': get_sections(topic_articles),
-                         'topics': get_topics(topic_articles, False)})
+                         'topics': get_topics(topic_articles)})
 
 
 def store_feedback(e, post):
@@ -692,7 +692,7 @@ def selection_query(request):
         return Response({'articles': article_data,
                          'keywords': keywords,
                          'sections': get_sections(topic_articles),
-                         'topics': get_topics(topic_articles, False)})
+                         'topics': get_topics(topic_articles)})
 
 
 @api_view(['GET'])
@@ -889,21 +889,22 @@ def get_topics(articles, normalise=True):
                 tmp['topic_dist'].append({
                     'label': '\n'.join(tw.topic.label.split(',')),
                     'num': tw.topic.num,
-                    'weight': tw.weight
+                    'weight': float("{0:.2f}".format(tw.weight*100)),
+                    'prop': tw.weight
                 })
         except:
             print 'no topics for article %s' % a
             continue
 
         if normalise:
-            weight_sum = sum([t['weight'] for t in tmp['topic_dist']])
+            weight_sum = sum([t['prop'] for t in tmp['topic_dist'] if t['prop'] > 0.05])
             for t in tmp['topic_dist']:
-                t['weight'] /= (weight_sum / 100)
-                t['weight'] = float("{0:.2f}".format(t['weight']))
+                t['prop'] /= (weight_sum / 100)
+                # t['prop'] = float("{0:.2f}".format(t['weight']))
         else:
             for t in tmp['topic_dist']:
-                t['weight'] *= 100
-                t['weight'] = float("{0:.2f}".format(t['weight']))
+                t['prop'] *= 100
+                # t['prop'] = float("{0:.2f}".format(t['weight']))
         result.append(tmp)
     return result
 
@@ -915,20 +916,21 @@ def get_sec_topics(sec, normalise=True):
             result.append({
                 'label': '\n'.join(tw.topic.label.split(',')),
                 'num': tw.topic.num,
-                'weight': tw.weight
+                'weight': float("{0:.1f}".format(tw.weight*100)),
+                'prop': tw.weight
             })
     except:
         print 'no topics for section %s' % sec
 
     if normalise:
-        weight_sum = sum([t['weight'] for t in result])
+        weight_sum = sum([t['prop'] for t in result if t['prop'] > 0.05])
         for t in result:
-            t['weight'] /= (weight_sum / 100)
-            t['weight'] = float("{0:.2f}".format(t['weight']))
+            t['prop'] /= (weight_sum / 100)
+            # t['weight'] = float("{0:.2f}".format(t['weight']))
     else:
         for t in result:
-            t['weight'] *= 100
-            t['weight'] = float("{0:.2f}".format(t['weight']))
+            t['prop'] *= 100
+            # t['weight'] = float("{0:.2f}".format(t['weight']))
 
     return result
 

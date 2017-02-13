@@ -641,6 +641,19 @@ a.progress-bar {
     background-color: #46BFBD;
 }
 
+.tooltip-label {
+    display: none;
+    position: absolute;
+    background: #ffe;
+    border: 1px solid #eed;
+    border-radius: 4px;
+    padding: 2px 4px;
+}
+
+:hover + .tooltip-label {
+    display: block;
+}
+
 .progress-bar-vertical {
   width: 20px;
   min-height: 300px;

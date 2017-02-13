@@ -147,23 +147,26 @@
                             <h3 class="heading-minor text-center">Topics</h3>
 
                             <div class="progress" ng-repeat="art in topics" ng-if="art.article_id==result.id">
-                                <div id="topic" ng-repeat="tw in art.topic_dist" target="_blank" class="progress-bar"
-                                     ng-style="{'width': transformers(tw.weight), 'background-color': pick_color($index)}"
-                                     title="{{ tw.label }}"> {{ tw.weight }}%
+                                <div ng-repeat="tw in art.topic_dist" target="_blank" class="progress-bar"
+                                     ng-style="{'width': transformers(tw.prop), 'background-color': pick_color($index)}"
+                                     title="{{ tw.label }}">{{ tw.weight }}%
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- sections bar -->
-                    <div class="col-lg-3"> 
+                    <div class="col-lg-3">
+                        <h3 class="heading-minor text-center">Article's sections</h3>
                         <div ng-repeat="a in sections" ng-if="a.article_id==result.id ">
-                            <div ng-repeat="section in a.sections" ng-if="section.title != 'abstr' && section.title.toLowerCase().indexOf('concl') == -1
-                                     && section.title.toLowerCase().indexOf('intro') == -1">
-                                <span>{{ section.title }}</span>
+                            <div ng-repeat="section in a.sections" ng-if="
+                                        section.title.toLowerCase().indexOf('abstr') == -1 &&
+                                        section.title.toLowerCase().indexOf('concl') == -1 &&
+                                        section.title.toLowerCase().indexOf('intro') == -1">
+                                <span data-container="body">{{ section.title }}</span>
                                 <div class="progress">
                                     <div ng-repeat="tw in section.topics" target="_blank" class="progress-bar"
-                                         ng-style="{'width': transformers(tw.weight), 'background-color': pick_color($index)}"
+                                         ng-style="{'width': transformers(tw.prop), 'background-color': pick_color($index)}"
                                          title="{{ tw.label }}"> {{ tw.weight }}%
                                     </div>
                                     <!--<div class="progress progress-bar-vertical">
