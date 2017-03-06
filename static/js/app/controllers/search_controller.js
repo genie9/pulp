@@ -27,7 +27,7 @@ SearchApp.controller("SearchController", ["$scope", "$rootScope", "$sce", "$loca
                 $scope.results = response.articles;
                 $scope.topics = response.topics;
                 $scope.sections = response.sections;
-                $scope.visualization_data = {topics: response.topics, append: false};
+//                $scope.visualization_data = {topics: response.topics, append: false};
                 $scope.search_heading = $scope.search_keyword;
 
                 $scope.loading = false;
@@ -44,6 +44,7 @@ SearchApp.controller("SearchController", ["$scope", "$rootScope", "$sce", "$loca
             });
     }
 
+    // for topics progress bar rendering ...
     $scope.transformers = function (tw) {
         return tw.toString() + '%';
     }
@@ -53,6 +54,7 @@ SearchApp.controller("SearchController", ["$scope", "$rootScope", "$sce", "$loca
         var colors = ["#7B241C","#CB4335","#884EA0","#1F618D","#2E86C1","#17A589","#1E8449","#D4AC0D","#D68910","#BA4A00","#c3aff1","#84c7b0","#f88bcb","#dffeca","#859dce"]
         return colors[ind];
     }
+    // .... till here, added by genie
 
     $scope.toggle_bookmark_history = function () {
         $scope.bookmark_history_showing = !$scope.bookmark_history_showing;
@@ -137,8 +139,9 @@ SearchApp.controller("SearchController", ["$scope", "$rootScope", "$sce", "$loca
         else {
             Api.next(options).success(function (response) {
                 $scope.results = response.articles;
+                $scope.sections = response.sections;
                 $scope.topics = response.topics;
-                $scope.visualization_data = {topics: response.topics, append: false};
+           //     $scope.visualization_data = {topics: response.topics, append: false};
                 $scope.loading = false;
 
                 keywords = response.keywords;

@@ -533,8 +533,8 @@ def textual_query(request):
 
         serializer = ArticleSerializer(articles, many=True)
         return Response({'articles': serializer.data,
-                         'sections': get_sections(topic_articles),
-                         'topics': get_topics(topic_articles)})
+                         'sections': get_sections(articles),
+                         'topics': get_topics(articles)})
 
 
 def store_feedback(e, post):
@@ -668,8 +668,8 @@ def selection_query(request):
 
             return Response({'articles': serializer.data,
                              'keywords': {},
-                             'sections': get_sections(topic_articles),
-                             'topics': get_topics(topic_articles)})
+                             'sections': get_sections(rand_articles),
+                             'topics': get_topics(rand_articles)})
 
         print "%d articles (%s)" % (len(rand_articles), ','.join([str(a.id) for a in rand_articles]))
 
@@ -691,8 +691,8 @@ def selection_query(request):
 
         return Response({'articles': article_data,
                          'keywords': keywords,
-                         'sections': get_sections(topic_articles),
-                         'topics': get_topics(topic_articles)})
+                         'sections': get_sections(rand_articles),
+                         'topics': get_topics(rand_articles)})
 
 
 @api_view(['GET'])
@@ -855,7 +855,6 @@ def experiment_ratings(request):
 def get_sections(articles):
     result = []
 
-    # sections = ArticleSection.objects.
     for a in articles:
         tmp = {
             'article_id': a.id,
