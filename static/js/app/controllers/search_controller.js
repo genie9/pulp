@@ -42,27 +42,44 @@ SearchApp.controller("SearchController", ["$scope", "$rootScope", "$sce", "$loca
 
                 $scope.results = [];
             });
-    }
+    };
 
     // for topics progress bar rendering ...
     $scope.transformers = function (tw) {
         return tw.toString() + '%';
-    }
+    };
+
 
     $scope.pick_color = function (ind) {
         // there's only 14 colors. if more topics in progress bar, add more colors
-        var colors = ["#7B241C","#CB4335","#884EA0","#1F618D","#2E86C1","#17A589","#1E8449","#D4AC0D","#D68910","#BA4A00","#c3aff1","#84c7b0","#f88bcb","#dffeca","#859dce"]
+        var colors = ["#7B241C","#CB4335","#884EA0","#1F618D","#2E86C1","#17A589","#1E8449","#D4AC0D","#D68910","#BA4A00","#c3aff1","#84c7b0","#f88bcb","#dffeca","#859dce"];
         return colors[ind];
-    }
+    };
+
+    $scope.toggleVisibility = function (bar) { //, btn_more, btn_less) {
+        var st_bar = 'hidden';
+        //var st_btn_more = 'visible';
+        //var st_btn_less = 'hidden';
+
+        if (bar.style['overflow'] == 'hidden') {
+            alert('yo');
+            st_bar = 'visible';
+            //st_btn_more = 'hidden';
+            //st_btn_less = 'visible';
+        }
+        bar.style['overflow'] = st_bar;
+        //btn_more.style.visibility = st_btn_more;
+        //btn_less.style.visibility = st_btn_less;
+    };
     // .... till here, added by genie
 
     $scope.toggle_bookmark_history = function () {
         $scope.bookmark_history_showing = !$scope.bookmark_history_showing;
-    }
+    };
 
     $scope.article_in_view = function (result) {
         result.seen = true;
-    }
+    };
 
     $scope.touch_article = function (article) {
         $rootScope.experiment_data.articles.push({
@@ -76,7 +93,7 @@ SearchApp.controller("SearchController", ["$scope", "$rootScope", "$sce", "$loca
         article.reading_started = new Date();
 
         $scope.viewed_article = article;
-    }
+    };
 
     $scope.close_article_view = function () {
         var now = new Date();
@@ -86,7 +103,7 @@ SearchApp.controller("SearchController", ["$scope", "$rootScope", "$sce", "$loca
         $scope.viewed_article.reading_ended = now;
         $scope.viewed_article.reading_time = diff;
         $scope.viewed_article = null;
-    }
+    };
 
     $scope.toggle_bookmark = function (result) {
         result.bookmarked = !result.bookmarked;
@@ -103,7 +120,7 @@ SearchApp.controller("SearchController", ["$scope", "$rootScope", "$sce", "$loca
                 return article.id == result.id
             });
         }
-    }
+    };
 
     $scope.next = function () {
         var options = {
@@ -123,7 +140,7 @@ SearchApp.controller("SearchController", ["$scope", "$rootScope", "$sce", "$loca
         var history_obj = {
             iteration: $scope.iteration,
             articles: _.where($scope.results, {bookmarked: true})
-        }
+        };
 
         if (history_obj.articles.length != 0) {
             $scope.bookmark_history.push(history_obj);
@@ -159,11 +176,11 @@ SearchApp.controller("SearchController", ["$scope", "$rootScope", "$sce", "$loca
                 $scope.loading = false;
             });
         }
-    }
+    };
 
     $scope.back_to_top = function () {
         UI.back_to_top();
-    }
+    };
 
     $scope.next_is_disabled = function () {
         if ($scope.iteration > 1 || _.where($scope.results, {bookmarked: true}).length > 0) {
@@ -171,7 +188,7 @@ SearchApp.controller("SearchController", ["$scope", "$rootScope", "$sce", "$loca
         }
 
         return true;
-    }
+    };
 
     $scope.end = function () {
         if ($scope.viewed_article) {
@@ -201,7 +218,7 @@ SearchApp.controller("SearchController", ["$scope", "$rootScope", "$sce", "$loca
 
             $location.path('/settings');
         });
-    }
+    };
 
     $scope.more_topics = function () {
         $scope.topics_pointer += 100;
@@ -218,7 +235,7 @@ SearchApp.controller("SearchController", ["$scope", "$rootScope", "$sce", "$loca
                 $scope.visualization_data = {topics: topics.data, append: true};
                 $scope.loading_topics = false;
             });
-    }
+    };
 
     $scope.toggle_highlight = function () {
         $scope.highlight_keywords = !$scope.highlight_keywords;
@@ -228,20 +245,20 @@ SearchApp.controller("SearchController", ["$scope", "$rootScope", "$sce", "$loca
         } else {
             un_highlight();
         }
-    }
+    };
 
     $scope.show_full_abstract = function (result) {
         result.abstract_synopsis = result.abstract;
         result.full_length_abstract = true;
-    }
+    };
 
     $scope.bookmarked_results = function (result) {
         return result.bookmarked == true;
-    }
+    };
 
     $scope.toggle_plain_abstract = function (result) {
         result.show_plain_abstract = !result.show_plain_abstract;
-    }
+    };
 
     var un_highlight = function () {
         $scope.results.forEach(function (result) {
@@ -249,7 +266,7 @@ SearchApp.controller("SearchController", ["$scope", "$rootScope", "$sce", "$loca
             result.abstract_synopsis = $sce.trustAsHtml(UI.un_highlight(result.abstract_synopsis));
             result.title = $sce.trustAsHtml(UI.un_highlight(result.title));
         });
-    }
+    };
 
     var highlight = function () {
         un_highlight();
@@ -259,7 +276,7 @@ SearchApp.controller("SearchController", ["$scope", "$rootScope", "$sce", "$loca
             result.abstract_synopsis = $sce.trustAsHtml(UI.highlight(result.abstract_synopsis, keywords, $scope.selected_highlight_color.rgb));
             result.title = $sce.trustAsHtml(UI.highlight(result.title, keywords, $scope.selected_highlight_color.rgb));
         });
-    }
+    };
 
     var set_highlighting = function (value) {
         if (!value) {
@@ -267,7 +284,7 @@ SearchApp.controller("SearchController", ["$scope", "$rootScope", "$sce", "$loca
         } else {
             $scope.highlight_keywords = true;
         }
-    }
+    };
 
     var init_results = function (articles) {
 
@@ -285,7 +302,7 @@ SearchApp.controller("SearchController", ["$scope", "$rootScope", "$sce", "$loca
             result.abstract_synopsis = $sce.trustAsHtml(synopsis);
             result.full_length_abstract = ( String(result.abstract).length == String(result.abstract_synopsis).length );
         });
-    }
+    };
 
     var reset_variables = function () {
         $scope.iteration = 1;
@@ -293,7 +310,7 @@ SearchApp.controller("SearchController", ["$scope", "$rootScope", "$sce", "$loca
         $scope.bookmark_history = [];
         $scope.results = [];
         $scope.keywords = {};
-    }
+    };
 
     var is_exploratory = function () {
         var params = {
@@ -307,14 +324,14 @@ SearchApp.controller("SearchController", ["$scope", "$rootScope", "$sce", "$loca
         };
 
         return Classifier.is_exploratory(params);
-    }
+    };
 
     $scope.$watch('chosen_highlight_color_index', function (newVal, oldVal) {
         $scope.selected_highlight_color = $scope.highlight_colors[parseInt(newVal)];
         highlight();
     });
 
-    QueryService.setYearRange({from: $location.search().year_from || 1993, to: $location.search().year_to || 2100})
+    QueryService.setYearRange({from: $location.search().year_from || 1993, to: $location.search().year_to || 2100});
     //QueryService.setQuery($location.search().query || ''); // uncomment to go back to search bar
 
     $scope.search_keyword = QueryService.getQuery();

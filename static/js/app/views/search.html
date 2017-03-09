@@ -12,7 +12,7 @@
     <div class="loading-results">
         <i class="fa fa-cog fa-spin"></i>
     </div>
-</div>
+    </div>
 
 <div id="search-form-container" ng-hide="searching">
     <div class="wrapper">
@@ -57,37 +57,10 @@
         </h1>
 
         <div class="pull-right" id="header-button-wrapper">
-            <!--<button id="explain-search-results-trigger" data-toggle="modal" data-target="#explain-search-results-modal" class="btn btn-blue btn-rounded" ng-show="iteration > 1"><i class="fa fa-question-circle marg-right"></i>Explain these results</button>-->
             <button class="btn btn-grey btn-rounded" ng-click="next()" ng-show="results.length > 0">Next<i
                     class="fa fa-long-arrow-right marg-left"></i></button>
         </div>
     </div>
-
-    <!--<div class="bookmark-history-container" ng-hide="bookmark_history.length == 0">
-        <div class="wrapper">
-            <a style="cursor: pointer" class="bookmark-history-display-trigger" ng-click="toggle_bookmark_history()">
-                <span ng-hide="bookmark_history_showing">
-                    Show my history<i class="fa fa-angle-down marg-left"></i>
-                </span>
-                <span ng-show="bookmark_history_showing">
-                    Hide my history<i class="fa fa-angle-up marg-left"></i>
-                </span>
-            </a>
-            <div class="bookmark-history-display" ng-show="bookmark_history_showing">
-                <div ng-repeat="history in bookmark_history">
-                    <div style="display: block">
-                        <h4><span class="text-blue">{{history.iteration}}.</span> iteration</h4>
-                    </div>
-                    <div class="history-articles">
-                        <div ng-repeat="article in history.articles">
-                            <a href="{{article.url}}" target="blank" class="btn btn-circle bookmark-true bookmark animated" data-container="body" data-title="{{article.title | strip_tags}}" data-toggle="popover" data-placement="top" data-html="true" data-content="{{article.abstract | synopsis | strip_tags}}"><i class="fa fa-star"></i></a>
-                            <div class="spacer"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>-->
 
     <div id="results-container">
         <div id="articles-container" style="padding: 0px 25px;">
@@ -98,53 +71,65 @@
 
                 <li class="media selected-{{ result.bookmarked }}" ng-repeat="result in results"
                     in-view="article_in_view(result)">
-                    <div class="col-lg-9">
-                        <button data-toggle="tooltip" data-placement="top" title="Select this article"
-                                ng-click="toggle_bookmark(result)"
-                                class="pull-right btn btn-circle bookmark bookmark-{{ result.bookmarked }}">
-                            <i class="fa fa-thumbs-o-{{ result.bookmarked ? 'up' : 'down'}} fa-2x"></i>
-                        </button>
-                        <div class="media-body">
-                            <a style="cursor: pointer" target="blank" ng-click="touch_article(result)"
-                               ng-class="{ 'clicked': result.clicked }"><h3 class="media-heading article-title"
-                                                                            ng-bind-html="result.title"></h3></a>
+                    <div id="hidden-element" ng-style="hideStyle">
+                        <div class="col-lg-9">
+                            <button data-toggle="tooltip" data-placement="top" title="Select this article"
+                                    ng-click="toggle_bookmark(result)"
+                                    class="pull-right btn btn-circle bookmark bookmark-{{ result.bookmarked }}">
+                                <i class="fa fa-thumbs-o-{{ result.bookmarked ? 'up' : 'down'}} fa-2x"></i>
+                            </button>
+                            <div class="media-body">
+                                <a style="cursor: pointer" target="blank" ng-click="touch_article(result)"
+                                   ng-class="{ 'clicked': result.clicked }"><h3 class="media-heading article-title"
+                                                                                ng-bind-html="result.title"></h3></a>
+                                <ul class="list-inline article-attributes">
+                                    <li>
+                                        <strong><i class="fa fa-user text-muted marg-right"></i>Authors: </strong>
+                                        <span class="article-authors" ng-bind-html="result.author"></span>
+                                    </li>
+                                    <li>
+                                        <strong><i class="fa fa-book text-muted marg-right"></i>Venue: </strong>
+                                        <span class="article-venue">{{ result.venue }}</span>
+                                    </li>
 
-                            <!--<button class="btn btn-grey plain-abstract-toggle" ng-click="toggle_plain_abstract(result)">
-                                <i class="fa fa-eye"></i>
-                                <span ng-hide="result.show_plain_abstract">Show plain version</span>
-                                <span ng-show="result.show_plain_abstract">Show LaTeX version</span>
-                            </button>-->
+                                    <li>
+                                        <strong><i class="fa fa-calendar text-muted marg-right"></i>Date: </strong>
+                                        <span class="article-venue">{{ result.date }}</span>
+                                    </li>
+                                </ul>
 
-                            <ul class="list-inline article-attributes">
-                                <li>
-                                    <strong><i class="fa fa-user text-muted marg-right"></i>Authors: </strong>
-                                    <span class="article-authors" ng-bind-html="result.author"></span>
-                                </li>
-                                <li>
-                                    <strong><i class="fa fa-book text-muted marg-right"></i>Venue: </strong>
-                                    <span class="article-venue">{{ result.venue }}</span>
-                                </li>
+                                <div class="article-abstract" ng-hide="result.show_plain_abstract"
+                                     mathjax-bind="result.abstract"></div>
 
-                                <li>
-                                    <strong><i class="fa fa-calendar text-muted marg-right"></i>Date: </strong>
-                                    <span class="article-venue">{{ result.date }}</span>
-                                </li>
-                            </ul>
+                                <div ng-bind-html="result.plain_abstract" ng-show="result.show_plain_abstract"></div>
+                            </div>
+                        </div>
 
-                            <div class="article-abstract" ng-hide="result.show_plain_abstract"
-                                 mathjax-bind="result.abstract"></div>
-
-                            <div ng-bind-html="result.plain_abstract" ng-show="result.show_plain_abstract"></div>
-
-                            <!--<button class="btn btn-grey btn-xs ellipsis" ng-hide="result.full_length_abstract" ng-click="show_full_abstract(result)" data-toggle="tooltip" data-placement="top" title="Show full abstract"><i class="fa fa-ellipsis-h"></i></button>-->
-
-                            <!--<div class="progress mean-bar" ng-show="result.mean">
-                                <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" exploitation>
-                                Exploitation
+                    <!-- sections bar -->
+                        <div class="col-lg-3">
+<!--                        <div id="{{ 'side-bar'+$index }}" style="max-height:150px; overflow:hidden">-->
+                            <h3 class="heading-minor text-center" style="margin-top:0px">Article's sections</h3>
+                            <div ng-repeat="a in sections" ng-if="a.article_id==result.id ">
+                                <div ng-repeat="section in a.sections" ng-if="
+                                            section.title.toLowerCase().indexOf('abstr') == -1 &&
+                                            section.title.toLowerCase().indexOf('concl') == -1 &&
+                                            section.title.toLowerCase().indexOf('intro') == -1">
+                                    <span data-container="body">{{ section.title }}</span>
+                                    <div class="progress">
+                                        <div ng-repeat="tw in section.topics" target="_blank" class="progress-bar"
+                                             ng-style="{'width': transformers(tw.prop), 'background-color': pick_color($index)}"
+                                             title="{{ tw.label }}"> {{ tw.weight }}%
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>-->
-
-                            <h3 class="heading-minor text-center">Topics</h3>
+                            </div>
+                            <button id="hidden-btn" class='text-btn' ng-style="hideBtn" ng-click="showBtn={'visibility':'visible'}; hideBtn={'visibility':'hidden'}; hideStyle={'overflow': 'hidden'}">LESS</button>
+                        </div>
+                    </div>
+                    <!-- fixed elements for article -->
+                    <div >
+                        <div class="col-lg-9">
+                            <h3 class="heading-minor text-center" style="margin-top:5px" >Topics</h3>
 
                             <div class="progress" ng-repeat="art in topics" ng-if="art.article_id==result.id">
                                 <div ng-repeat="tw in art.topic_dist" target="_blank" class="progress-bar"
@@ -153,50 +138,13 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
-
-                    <!-- sections bar -->
-                    <div class="col-lg-3">
-                        <h3 class="heading-minor text-center">Article's sections</h3>
-                        <div ng-repeat="a in sections" ng-if="a.article_id==result.id ">
-                            <div ng-repeat="section in a.sections" ng-if="
-                                        section.title.toLowerCase().indexOf('abstr') == -1 &&
-                                        section.title.toLowerCase().indexOf('concl') == -1 &&
-                                        section.title.toLowerCase().indexOf('intro') == -1">
-                                <span data-container="body">{{ section.title }}</span>
-                                <div class="progress">
-                                    <div ng-repeat="tw in section.topics" target="_blank" class="progress-bar"
-                                         ng-style="{'width': transformers(tw.prop), 'background-color': pick_color($index)}"
-                                         title="{{ tw.label }}"> {{ tw.weight }}%
-                                    </div>
-                                    <!--<div class="progress progress-bar-vertical">
-                                        <div class="progress-bar" role="progressbar" aria-valuenow="30" aria-valuemin="0"
-                                             aria-valuemax="100" style="height: 30%;">
-                                            <span class="sr-only">30% Complete</span>
-                                        </div>
-                                    </div>-->
-                                </div>
-                            </div>
+                        <div class="col-lg-3 ontop">
+                            <button id="shown-btn" class='text-btn' ng-style="showBtn" ng-click="showBtn={'visibility':'hidden'}; hideBtn={'visibility':'visible'}; hideStyle={'overflow': 'visible'}">MORE</button>
                         </div>
                     </div>
                 </li>
             </ul>
         </div>
-
-        <!--<div id="topics-container" topics-diagram ng-model="visualization_data" ng-hide="!visualization_data">
-          <div id="current-iteration-indicator">
-            <div id="iteration-label">Current iteration</div>
-          </div>
-          <div id="more-topic-info" ng-click="more_topics()">
-            <span ng-hide="loading_topics">
-              <i class="fa fa-plus"></i> Show me more
-            </span>
-            <span ng-show="loading_topics">
-              <i class="fa fa-spin fa-spinner"></i> Loading...
-            </span>
-          </div>
-        </div>-->
-
 
         <!--<button id="back-to-top" class="btn btn-grey btn-rounded" ng-click="back_to_top();"><i class="fa fa-angle-up fa-sm marg-right"></i>Back to top</button>-->
     </div>
@@ -274,4 +222,19 @@
         </div>
     </div>
 </div>
+<script>
+    var toggleVisibility = function (bar) { //, btn_more, btn_less) {
+        var st_bar = 'hidden';
+        //var st_btn_more = 'visible';
+        //var st_btn_less = 'hidden';
 
+        if (bar.style['overflow'] == 'hidden') {
+            //alert('yo');
+            st_bar = 'visible';
+            //st_btn_more = 'hidden';
+            //st_btn_less = 'visible';
+        }
+        bar.style['overflow'] = st_bar;
+        //btn_more.style.visibility = st_btn_more;
+   };
+</script>
