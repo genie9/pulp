@@ -56,20 +56,21 @@ SearchApp.controller("SearchController", ["$scope", "$rootScope", "$sce", "$loca
         return colors[ind];
     };
 
-    $scope.toggleVisibility = function (bar) { //, btn_more, btn_less) {
+    // NOT WORKING! button and full abstract visibility
+    $scope.toggleVisibility = function (more_btn, less_btn, bar) { //, btn_more, btn_less) {
         var st_bar = 'hidden';
-        //var st_btn_more = 'visible';
-        //var st_btn_less = 'hidden';
+        var st_btn_more = 'visible';
+        var st_btn_less = 'hidden';
 
-        if (bar.style['overflow'] == 'hidden') {
+        if (bar == {'overflow':'hidden'}) {
             alert('yo');
-            st_bar = 'visible';
-            //st_btn_more = 'hidden';
-            //st_btn_less = 'visible';
+            st_bar = 'visible'
+            st_btn_more = 'hidden';
+            st_btn_less = 'visible';
         }
-        bar.style['overflow'] = st_bar;
-        //btn_more.style.visibility = st_btn_more;
-        //btn_less.style.visibility = st_btn_less;
+        bar = {'overflow':st_bar};
+        more_btn = {'visibility':st_btn_more};
+        less_btn = {'visibility':st_btn_less};
     };
     // .... till here, added by genie
 
