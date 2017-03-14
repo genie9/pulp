@@ -40,23 +40,28 @@ class ArticleParser(xml.sax.ContentHandler) :
         self.content += c
 
     def endElement(self, name) :
-        if name == 'article' : 
-            if self.article :
-                self.article.save()
-                self.article = None
-                self.count += 1
+        try :
+            if name == 'article' : 
+                if self.article :
+                    self.article.save()
+                    self.article = None
+                    self.count += 1
 
-                if (self.count % 1000) == 0 :
-                    print >> stderr, "read in %d articles" % self.count
+                    if (self.count % 1000) == 0 :
+                        print >> stderr, "read in %d articles" % self.count
 
-        elif name == 'title'    : self.article.title    = self.cleaned()
-        elif name == 'author'   : self.article.author   = self.cleaned()
-        elif name == 'abstract' : self.article.abstract = self.cleaned()
-        elif name == 'venue'    : self.article.venue    = self.cleaned()
-        elif name == 'url'      : self.article.url      = self.cleaned()
-        elif name == 'id'       : self.article.arxivid  = self.cleaned()
-        elif name == 'created'  : self.article.date     = datetime.date(*[ int(i) for i in self.cleaned().split('-') ])
-        else : pass
+            elif name == 'title'    : self.article.title    = self.cleaned()
+            elif name == 'author'   : self.article.author   = self.cleaned()
+            elif name == 'abstract' : self.article.abstract = self.cleaned()
+            elif name == 'venue'    : self.article.venue    = self.cleaned()
+            elif name == 'url'      : self.article.url      = self.cleaned()
+            elif name == 'id'       : self.article.arxivid  = self.cleaned()
+            elif name == 'created'  : self.article.date     = datetime.date(*[ int(i) for i in self.cleaned().split('-') ])
+            else : pass
+        except TypeError :
+            print 'TypeError %s'%self.article.arxivid
+        except ValueError :
+            print 'ValueError %s'%self.article.arxivid
 
 class Command(BaseCommand) :
     args = '<XML file> <XML file> ...'

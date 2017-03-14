@@ -94,7 +94,7 @@ class Command(BaseCommand) :
                         tw.article  = a
                         tw.topic    = topics.get(num=top_ind[i])  # topics[top_ind[i]]
                         tw.weight   = dist[top_ind[i]]  # float(data[i+1])
-
+                        print 'saving'
                         tw.save()
 
                     print top_ind

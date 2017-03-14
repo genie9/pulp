@@ -7,7 +7,7 @@ server.sh
 *db_*
 *.txt
 *.idea
-test.xml
+*.xml
 env/
 bm25*
 linrel*

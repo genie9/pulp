@@ -60,8 +60,8 @@ class ArticleSection(models.Model) :
 
 class TopicWeight(models.Model) :
     topic   = models.ForeignKey(Topic)
-    article = models.ForeignKey(Article)
-    section = models.ForeignKey(ArticleSection)
+    article = models.ForeignKey(Article, null=True, blank=True)
+    section = models.ForeignKey(ArticleSection, null=True, blank=True)
     weight  = models.FloatField(default=0.0)
 
 
