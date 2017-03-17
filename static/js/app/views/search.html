@@ -117,7 +117,7 @@
                                     <span data-container="body">{{ section.title }}</span>
                                     <div class="progress">
                                         <div ng-repeat="tw in section.topics" target="_blank" class="progress-bar"
-                                             ng-style="{'width': transformers(tw.prop), 'background-color': pick_color($index)}"
+                                             ng-style="{'width': transformers(tw.prop), 'background-color': tw.color}"
                                              title="{{ tw.label }}"> {{ tw.weight }}%
                                         </div>
                                     </div>
@@ -133,7 +133,7 @@
 
                             <div class="progress" ng-repeat="art in topics" ng-if="art.article_id==result.id">
                                 <div ng-repeat="tw in art.topic_dist" target="_blank" class="progress-bar"
-                                     ng-style="{'width': transformers(tw.prop), 'background-color': pick_color($index)}"
+                                     ng-style="{'width': transformers(tw.prop), 'background-color': tw.color}"
                                      title="{{ tw.label }}">{{ tw.weight }}%
                                 </div>
                             </div>

@@ -875,7 +875,6 @@ def get_sections(articles):
 
 
 def get_topics(articles, normalise=True):
-    # return [] # XXX
     result = []
 
     for a in articles:
@@ -889,7 +888,8 @@ def get_topics(articles, normalise=True):
                     'label': '\n'.join(tw.topic.label.split(',')),
                     'num': tw.topic.num,
                     'weight': float("{0:.2f}".format(tw.weight*100)),
-                    'prop': tw.weight
+                    'prop': tw.weight,
+                    'color': tw.topic.color
                 })
         except:
             print 'no topics for article %s' % a
@@ -916,7 +916,8 @@ def get_sec_topics(sec, normalise=True):
                 'label': '\n'.join(tw.topic.label.split(',')),
                 'num': tw.topic.num,
                 'weight': float("{0:.1f}".format(tw.weight*100)),
-                'prop': tw.weight
+                'prop': tw.weight,
+                'color': tw.topic.color
             })
     except:
         print 'no topics for section %s' % sec

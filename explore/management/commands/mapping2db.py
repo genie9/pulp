@@ -74,17 +74,21 @@ class Command(BaseCommand) :
                     # a = articles[int(data[0])]
 
                     arx_num = data[1].split('/')[-1].split('.txt')[0]
-
+                    if 'cs' in arx_num :
+                        arx_num = arx_num.replace('cs', 'cs/')
+                        print arx_num
                     try :
                         a = articles.get(arxivid=arx_num)
                         print a
                     except :
-                        print 'article %s doesnt exist, going to next one' % arx_num
+                        print >> stderr, "article %s doesn't exist, going to next one" % arx_num
                         continue
 
                     # finding best topics and their numbers, added by genie
                     dist = map(float, data[2::])
                     top_ind = sorted(range(len(dist)), key=lambda k: dist[k], reverse=True)[0:NUM_TOPICS_TO_STORE]
+
+                    print top_ind
 
                     # with transaction.atomic() :
                     for i in range(len(top_ind)) :  # 2 + (2 * NUM_TOPICS_TO_STORE), 2) : #range(2, len(data), 2) :
@@ -94,10 +98,8 @@ class Command(BaseCommand) :
                         tw.article  = a
                         tw.topic    = topics.get(num=top_ind[i])  # topics[top_ind[i]]
                         tw.weight   = dist[top_ind[i]]  # float(data[i+1])
-                        print 'saving'
-                        tw.save()
 
-                    print top_ind
+                        tw.save()
 
                     if (linenum % 1000) == 0 :
                         self.stderr.write("saved topic weights for %s articles" % linenum)

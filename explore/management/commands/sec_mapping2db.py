@@ -76,14 +76,15 @@ class Command(BaseCommand):
                         print >> stderr, "Error: wrong number of tokens, line %d tokens: %s" % (linenum, data[1])
                         continue
 
-                    if arx_num.find('cs') != -1 :
-                        arx_num = 'cs/'.join(arx_num.split('cs')[1])
+#                    if 'cs' in arx_num :
+#                        arx_num = arx_num.replace('cs', 'cs/')
+#                        print arx_num
 
                     try:
                         s = sections.get(article_id=articles.get(arxivid=arx_num).id, num=sec_num)
-                        print s.id
+                        print s.article.arxivid
                     except:
-                        print 'Warning: article %s not in topic list, going to next one' % arx_num
+                        print >> stderr, 'Warning: article %s not in data base, going to next one' % arx_num
                         continue
 
                     # finding best topics and their numbers, added by genie

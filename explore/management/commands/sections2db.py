@@ -61,8 +61,7 @@ class Command(BaseCommand):
                         article, title = line.split(',', 1)
                     except ValueError:
                         print >> stderr, "Error: wrong number of tokens in read line, line %d tokens. %s" \
-                                         % (linenum, line)
-                        continue
+                                         % (linenum, line)                        
 
                     try:
                         arx_num, sec_num = article.split('_')
@@ -70,13 +69,17 @@ class Command(BaseCommand):
                         print >> stderr, "Error: wrong number of tokens in section number, line %d tokens: %s" \
                                          % (linenum, article)
                         continue
-
-                    if arx_num.find('cs') != -1 :
-                        arx_num = 'cs/'.join(arx_num.split('cs')[1])
+                    
+#                    check = False
+#                    if 'cs' in arx_num :
+#                        arx_num = arx_num.replace('cs', 'cs/' )
+#                        print arx_num
+#                        check = True
 
                     try:
                         a = articles.get(arxivid=arx_num)
-                        print 'article %s section %s' % (a, title)
+#                        if check :
+#                            print '%s article %s section %s' % (arx_num, a, title)
                     except:
                         print >> stderr, 'article %s from sections list not found in article table, going to next one' % arx_num
                         continue

@@ -55,7 +55,12 @@ class ArticleParser(xml.sax.ContentHandler) :
             elif name == 'abstract' : self.article.abstract = self.cleaned()
             elif name == 'venue'    : self.article.venue    = self.cleaned()
             elif name == 'url'      : self.article.url      = self.cleaned()
-            elif name == 'id'       : self.article.arxivid  = self.cleaned()
+            elif name == 'id'       : 
+                if 'cs' in self.content :
+                    print 'cs found %s'%self.content
+                    self.content = self.content.replace('cs/', 'cs')
+                    print 'replaced %s'%self.content
+                self.article.arxivid  = self.cleaned()
             elif name == 'created'  : self.article.date     = datetime.date(*[ int(i) for i in self.cleaned().split('-') ])
             else : pass
         except TypeError :

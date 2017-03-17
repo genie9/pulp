@@ -21,6 +21,7 @@ class Topic(models.Model) :
     label     = models.CharField(max_length=512)
     # added by genie
     num       = models.IntegerField()  # could be topic id
+    color     = models.CharField(max_length=7)
 
 # class TopicKeyword(models.Model) :
 #    topic    = models.ForeignKey(Topic)
@@ -34,7 +35,7 @@ class Article(models.Model) :
     venue    = models.CharField(max_length=200)
     url      = models.URLField()
     date     = models.DateField()
-    arxivid  = models.CharField(max_length=9) # e.g. 0704.0002
+    arxivid  = models.CharField(max_length=12) # e.g. 0704.0002
 
     def __unicode__(self) :
         return u'%s %s' % (self.__class__.__name__, self.title)
@@ -60,8 +61,8 @@ class ArticleSection(models.Model) :
 
 class TopicWeight(models.Model) :
     topic   = models.ForeignKey(Topic)
-    article = models.ForeignKey(Article, null=True, blank=True)
-    section = models.ForeignKey(ArticleSection, null=True, blank=True)
+    article = models.ForeignKey(Article, default=None, null=True, blank=True)
+    section = models.ForeignKey(ArticleSection, default=None, null=True, blank=True)
     weight  = models.FloatField(default=0.0)
 
 
