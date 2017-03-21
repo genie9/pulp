@@ -49,7 +49,7 @@ SearchApp.controller("SearchController", ["$scope", "$rootScope", "$sce", "$loca
         return tw.toString() + '%';
     };
 
-
+    // tmp color testing
     $scope.pick_color = function (ind) {
         // there's only 14 colors. if more topics in progress bar, add more colors
         var colors = ["#7B241C","#CB4335","#884EA0","#1F618D","#2E86C1","#17A589","#1E8449","#D4AC0D","#D68910","#BA4A00","#c3aff1","#84c7b0","#f88bcb","#dffeca","#859dce"];

@@ -13,7 +13,7 @@ module.exports = function(grunt) {
     },
     watch: {
       app: {
-        files: ['static/js/app/app.js', 'static/js/app/utils/*.js', 'static/js/app/directives/*.js', 'static/js/app/services/*.js', 'static/js/app/controllers/*.js'],
+        files: ['static/js/app/app.js', 'static/js/app/utils/*.js', 'static/js/app/directives/*.js', 'static/js/app/services/*.js', 'static/js/app/controllers/*.js','static/js/app/views/*.html'],
         tasks: ['uglify']
       }
     }

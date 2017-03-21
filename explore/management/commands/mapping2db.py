@@ -74,12 +74,12 @@ class Command(BaseCommand) :
                     # a = articles[int(data[0])]
 
                     arx_num = data[1].split('/')[-1].split('.txt')[0]
-                    if 'cs' in arx_num :
-                        arx_num = arx_num.replace('cs', 'cs/')
-                        print arx_num
+#                    if 'cs' in arx_num :
+#                        arx_num = arx_num.replace('cs', 'cs/')
+#                        print arx_num
                     try :
                         a = articles.get(arxivid=arx_num)
-                        print a
+#                        print a
                     except :
                         print >> stderr, "article %s doesn't exist, going to next one" % arx_num
                         continue
@@ -88,7 +88,7 @@ class Command(BaseCommand) :
                     dist = map(float, data[2::])
                     top_ind = sorted(range(len(dist)), key=lambda k: dist[k], reverse=True)[0:NUM_TOPICS_TO_STORE]
 
-                    print top_ind
+#                    print top_ind
 
                     # with transaction.atomic() :
                     for i in range(len(top_ind)) :  # 2 + (2 * NUM_TOPICS_TO_STORE), 2) : #range(2, len(data), 2) :

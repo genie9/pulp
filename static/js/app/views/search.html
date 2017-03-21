@@ -71,7 +71,7 @@
 
                 <li class="media selected-{{ result.bookmarked }}" ng-repeat="result in results"
                     in-view="article_in_view(result)">
-                    <div id="hidden-element" ng-style="hideStyle">
+                    <div id="hidden-element" ng-style="hideStyle" >
                         <div class="col-lg-9">
                             <button data-toggle="tooltip" data-placement="top" title="Select this article"
                                     ng-click="toggle_bookmark(result)"
@@ -123,7 +123,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <button id="hidden-btn" class='text-btn' ng-style="hideBtn" ng-click="showBtn={'visibility':'visible'}; hideBtn={'visibility':'hidden'}; hideStyle={'overflow': 'hidden'}">LESS</button>
+                        
                         </div>
                     </div>
                     <!-- fixed elements for article -->
@@ -133,13 +133,16 @@
 
                             <div class="progress" ng-repeat="art in topics" ng-if="art.article_id==result.id">
                                 <div ng-repeat="tw in art.topic_dist" target="_blank" class="progress-bar"
-                                     ng-style="{'width': transformers(tw.prop), 'background-color': tw.color}"
+                                     ng-style="{'width': transformers(tw.prop)}" style='background-color: {{ tw.color }}'
                                      title="{{ tw.label }}">{{ tw.weight }}%
                                 </div>
                             </div>
                         </div>
                         <div class="col-lg-3 ontop">
-                            <button id="shown-btn" class='text-btn' ng-style="showBtn" ng-click="showBtn={'visibility':'hidden'}; hideBtn={'visibility':'visible'}; hideStyle={'overflow': 'visible'}">MORE</button>
+                            <button id="shown-btn" class='text-btn' ng-style="showBtn" ng-click="toggle = !toggle; hideStyle={'overflow': toggle == true ? 'visible':'hidden'}">
+                                <span ng-show="toggle">LESS</span>
+                                <span ng-hide="toggle">MORE</span>
+                            </button>
                         </div>
                     </div>
                 </li>
@@ -147,7 +150,7 @@
         </div>
 
         <!--<button id="back-to-top" class="btn btn-grey btn-rounded" ng-click="back_to_top();"><i class="fa fa-angle-up fa-sm marg-right"></i>Back to top</button>-->
-    </div>
+    </div>  
     <div id="footer-container" ng-if="results.length != 0">
         <div class="wrapper">
         <!--<button class="btn btn-red btn-rounded" ng-click="end()"><i class="fa fa-times marg-right"></i>End</button>-->
@@ -157,7 +160,7 @@
 </div>
 
 <!-- EXPLAIN SEARCH RESULTS MODAL -->
-
+<!--
 <div class="modal fade" id="explain-search-results-modal" tabindex="-1" role="dialog"
      aria-labelledby="explain-search-results-modal" aria-hidden="true">
     <div class="modal-dialog">
@@ -221,7 +224,7 @@
             </div>
         </div>
     </div>
-</div>
+</div>-->
 <script>
     var toggleVisibility = function (bar) { //, btn_more, btn_less) {
         var st_bar = 'hidden';

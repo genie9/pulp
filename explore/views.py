@@ -919,6 +919,7 @@ def get_sec_topics(sec, normalise=True):
                 'prop': tw.weight,
                 'color': tw.topic.color
             })
+#            print tw.topic.color
     except:
         print 'no topics for section %s' % sec
 

@@ -82,7 +82,7 @@ class Command(BaseCommand):
 
                     try:
                         s = sections.get(article_id=articles.get(arxivid=arx_num).id, num=sec_num)
-                        print s.article.arxivid
+#                        print s.article.arxivid
                     except:
                         print >> stderr, 'Warning: article %s not in data base, going to next one' % arx_num
                         continue
@@ -100,7 +100,7 @@ class Command(BaseCommand):
 
                         tw.save()
 
-                    print top_ind
+#                    print top_ind
 
                     if (linenum % 1000) == 0:
                         self.stderr.write("saved topic weights for %s sections" % linenum)
