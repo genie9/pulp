@@ -72,7 +72,6 @@ class Command(BaseCommand) :
                     # added by genie
                     t.num = num
                     t.color = colors[nums.index(num)]
-                    print t.color
                     t.save()
 
                     #for k in keywords :

@@ -44,9 +44,36 @@ SearchApp.controller("SearchController", ["$scope", "$rootScope", "$sce", "$loca
             });
     };
 
-    // for topics progress bar rendering ...
+    // from here ...
+    // for topics progress bar rendering
     $scope.transformers = function (tw) {
         return tw.toString() + '%';
+    };
+
+    // calculating font color (http://codepen.io/znak/pen/aOvMOd)
+    $scope.fontColor = function (bgColor) {
+        var R, G, B, C, L;
+
+        R = parseInt(bgColor.slice(1,3),16);
+        G = parseInt(bgColor.slice(3,5),16);
+        B = parseInt(bgColor.slice(5,7),16);
+
+        C = [ R/255, G/255, B/255 ];
+
+		for ( var i = 0; i < C.length; ++i ) {
+			if ( C[i] <= 0.03928 ) {
+				C[i] = C[i] / 12.92;
+			} else {
+				C[i] = Math.pow( ( C[i] + 0.055 ) / 1.055, 2.4);
+			}
+		}
+		L = 0.2126 * C[0] + 0.7152 * C[1] + 0.0722 * C[2];
+
+		if ( L > 0.179 ) {
+			return 'black';
+		} else {
+			return 'white';
+		}
     };
 
     // tmp color testing
