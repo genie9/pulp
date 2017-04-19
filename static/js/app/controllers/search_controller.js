@@ -135,7 +135,7 @@ SearchApp.controller("SearchController", ["$scope", "$rootScope", "$sce", "$loca
 
     $scope.toggle_bookmark = function (result) {
         result.bookmarked = !result.bookmarked;
-
+        /*
         if (result.bookmarked) {
             $rootScope.experiment_data.articles.push({
                 id: result.id,
@@ -147,7 +147,7 @@ SearchApp.controller("SearchController", ["$scope", "$rootScope", "$sce", "$loca
             _($rootScope.experiment_data.articles).remove(function (article) {
                 return article.id == result.id
             });
-        }
+        }*/
     };
 
     $scope.next = function () {

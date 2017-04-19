@@ -28,6 +28,7 @@ class Command(BaseCommand):
 
         NUM_TOPICS_TO_STORE = 10
         mallet_file = 'secs_100_props.txt'
+        no_top = [10, 16, 17, 22, 23, 24, 25, 26, 32, 34, 35, 37, 40, 44, 47, 48, 54, 55, 56, 57, 62, 63, 66, 68, 72, 76, 83, 84, 85, 93, 94, 96, 97]
 
         topic_count = Topic.objects.count()
         if topic_count == 0:
@@ -89,7 +90,8 @@ class Command(BaseCommand):
 
                     # finding best topics and their numbers, added by genie
                     dist = map(float, data[2::])
-                    top_ind = sorted(range(len(dist)), key=lambda k: dist[k], reverse=True)[0:NUM_TOPICS_TO_STORE]
+                    top_ind = [i for i in sorted(range(len(dist)), key=lambda k: dist[k], reverse=True) if i not in no_top][0:NUM_TOPICS_TO_STORE]
+                    print top_ind
 
                     for i in range(len(top_ind)):
                         tw = TopicWeight()

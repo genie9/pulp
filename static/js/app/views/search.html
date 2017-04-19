@@ -72,12 +72,7 @@
                 <li class="media selected-{{ result.bookmarked }}" ng-repeat="result in results"
                     in-view="article_in_view(result)">
                     <div id="hidden-element" ng-style="hideStyle" >
-                        <div class="col-lg-9">
-                            <button data-toggle="tooltip" data-placement="top" title="Select this article"
-                                    ng-click="toggle_bookmark(result)"
-                                    class="pull-right btn btn-circle bookmark bookmark-{{ result.bookmarked }}">
-                                <i class="fa fa-thumbs-o-{{ result.bookmarked ? 'up' : 'down'}} fa-2x"></i>
-                            </button>
+                        <div class="col-lg-11">
                             <div class="media-body">
                                 <a style="cursor: pointer" target="blank" ng-click="touch_article(result)"
                                    ng-class="{ 'clicked': result.clicked }"><h3 class="media-heading article-title"
@@ -104,11 +99,17 @@
                                 <div ng-bind-html="result.plain_abstract" ng-show="result.show_plain_abstract"></div>
                             </div>
                         </div>
-
-                    <!-- sections bar -->
-                        <div class="col-lg-3">
+                        <div class="col-lg-1">
+                            <button data-toggle="tooltip" data-placement="top" title="Select this article"
+                                    ng-click="toggle_bookmark(result)"
+                                    class="pull-right btn btn-circle bookmark bookmark-{{ result.bookmarked }}">
+                                <i class="fa fa-thumbs-o-{{ result.bookmarked ? 'up' : 'down'}} fa-2x"></i>
+                            </button>
+                        </div>
+                    <!-- sections bar --><!--
+                        <div class="col-lg-3">-->
 <!--                        <div id="{{ 'side-bar'+$index }}" style="max-height:150px; overflow:hidden">-->
-                            <h3 class="heading-minor text-center" style="margin-top:0px">Article's sections</h3>
+ <!--                           <h3 class="heading-minor text-center" style="margin-top:0px">Article's sections</h3>
                             <div ng-repeat="a in sections" ng-if="a.article_id==result.id ">
                                 <div ng-repeat="section in a.sections" ng-if="
                                             section.title.toLowerCase().indexOf('abstr') == -1 &&
@@ -124,12 +125,12 @@
                                 </div>
                             </div>
                         
-                        </div>
+                        </div>-->
                     </div>
                     <!-- fixed elements for article -->
                     <div >
-                        <div class="col-lg-9">
-                            <h3 class="heading-minor text-center" style="margin-top:5px">Topics</h3>
+                        <div class="col-lg-11">
+                            <h3 class="heading-minor text-center" style="margin-top:15px">Topics</h3>
 
                             <div class="progress" ng-repeat="art in topics" ng-if="art.article_id==result.id">
                                 <div id='fontz' ng-repeat="tw in art.topic_dist" target="_blank" class="progress-bar"
@@ -138,8 +139,9 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-lg-3 ontop">
-                            <button id="shown-btn" class='text-btn' ng-style="showBtn" ng-click="toggle = !toggle; hideStyle={'overflow': toggle == true ? 'visible':'hidden'}">
+
+                        <div class="col-lg-1 ontop">
+                            <button id="shown-btn"  style="margin-top:30px; margin-right:20px" class='text-btn pull-right' ng-click="toggle = !toggle; hideStyle={'overflow': toggle == true ? 'visible':'hidden'}">
                                 <span ng-show="toggle">LESS</span>
                                 <span ng-hide="toggle">MORE</span>
                             </button>
@@ -158,86 +160,3 @@
         </div>
     </div>
 </div>
-
-<!-- EXPLAIN SEARCH RESULTS MODAL -->
-<!--
-<div class="modal fade" id="explain-search-results-modal" tabindex="-1" role="dialog"
-     aria-labelledby="explain-search-results-modal" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="fa fa-times"></i>
-                </button>
-                <h4 class="modal-title">Explain these results</h4>
-            </div>
-            <div class="modal-body">
-                <div class="checkbox-label" ng-click="toggle_highlight()">
-                    <button class="blue-checkbox" id="highlight-toggle"
-                            ng-class="{ 'checked': highlight_keywords }"></button>
-                    <label>
-                        Highlight keywords
-                    </label>
-                </div>
-                <div id="highlight-info" class="explain-search-results-info" ng-show="highlight_keywords">
-                    <p>
-                        The intensity of the background color indicates the weight of the keywords in your search
-                        results
-                    </p>
-                    <label style="display: block">Color scheme</label>
-                    <select class="selectpicker" id="highlight-color" data-width="130px"
-                            selectpicker="{ dropupAuto: false }" ng-model="chosen_highlight_color_index"
-                            toggle-dropdown>
-                        <option ng-repeat="color in highlight_colors" value="{{$index}}">{{ color.name }}</option>
-                    </select>
-                    <div class="color-palet">
-                        <div class="color-palet-left">
-                            Light weight
-                        </div>
-                        <div class="color-palet-middle" style="
-                                background-image: -webkit-gradient(
-                                linear,
-                                right top,
-                                left top,
-                                color-stop(0, rgb({{ selected_highlight_color.rgb }})),
-                                color-stop(1, #FFFFFF)
-                                );
-                                background-image: -o-linear-gradient(left, rgb({{ selected_highlight_color.rgb }}) 0%, #FFFFFF 100%);
-                                background-image: -moz-linear-gradient(left, rgb({{ selected_highlight_color.rgb }}) 0%, #FFFFFF 100%);
-                                background-image: -webkit-linear-gradient(left, rgb({{ selected_highlight_color.rgb }}) 0%, #FFFFFF 100%);
-                                background-image: -ms-linear-gradient(left, rgb({{ selected_highlight_color.rgb }}) 0%, #FFFFFF 100%);
-                                background-image: linear-gradient(to left, rgb({{ selected_highlight_color.rgb }}) 0%, #FFFFFF 100%);
-                                ">
-                            <div style="width: 33%;" class="color-palet-divider" data-toggle="tooltip"
-                                 data-placement="top" title="Light weighted keyword"></div>
-                            <div style="width: 34%;" class="color-palet-divider" data-toggle="tooltip"
-                                 data-placement="top" title="Medium weighted keyword"></div>
-                            <div style="width: 33%;" class="color-palet-divider" data-toggle="tooltip"
-                                 data-placement="top" title="Heavy weighted keyword"></div>
-                        </div>
-                        <div class="color-palet-right">
-                            Heavy weight
-                        </div>
-                    </div>
-                </div>
-                <a href="visualization" target="blank" class="btn btn-grey btn-rounded" style="margin-top: 20px"><i
-                        class="fa fa-eye"></i> Show visualization</a>
-            </div>
-        </div>
-    </div>
-</div>-->
-<script>
-    var toggleVisibility = function (bar) { //, btn_more, btn_less) {
-        var st_bar = 'hidden';
-        //var st_btn_more = 'visible';
-        //var st_btn_less = 'hidden';
-
-        if (bar.style['overflow'] == 'hidden') {
-            //alert('yo');
-            st_bar = 'visible';
-            //st_btn_more = 'hidden';
-            //st_btn_less = 'visible';
-        }
-        bar.style['overflow'] = st_bar;
-        //btn_more.style.visibility = st_btn_more;
-   };
-</script>
