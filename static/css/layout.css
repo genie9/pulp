@@ -959,23 +959,33 @@ ul.dropdown-menu li a {
     max-width: 1400px;
 }
 
-#hidden-element {
-    max-height: 155px; 
+.hidden-element {
+    max-height: 135px; 
     overflow: hidden;
+}
+
+.block {
+    display: block;
+    margin-left: 60%;
+}
+
+.bottom {
+    margin-top: 55px;
+}
+
+.relative {
     position: relative;
 }
 
-.ontop {
-    padding: 0;
-    margin: 0;
+.absolute {
+    position: absolute;
+    bottom: 7px;
 }
-
+ 
 .text-btn {
     background:none;
     border:none;
-    margin:5px 0 0 50%;
     padding:0;
-    right: 50%;
 }
 
 #hidden-btn {
