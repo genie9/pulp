@@ -116,7 +116,9 @@ def build_corpus() :
     bad_chars = set(string.digits + string.punctuation)
 
     for a in Article.objects.all() :
-        s = a.title + ' ' + a.abstract
+#        s = a.title + ' ' + a.abstract
+        s = a.text
+
         #s = remove_latex(s)
         s = s.lower().strip()
         s = ''.join([ i if i not in bad_chars else ' ' for i in s ])
