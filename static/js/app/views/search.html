@@ -111,9 +111,7 @@
                             <h3 class="heading-minor text-center" style="margin-top:0px">Article's sections</h3>
                             <div ng-repeat="a in sections" ng-if="a.article_id==result.id ">
                                 <div ng-repeat="section in a.sections" ng-if="
-                                            section.title.toLowerCase().indexOf('abstr') == -1 &&
-                                            section.title.toLowerCase().indexOf('concl') == -1 &&
-                                            section.title.toLowerCase().indexOf('intro') == -1">
+                                            section.title.toLowerCase().indexOf('acknowled') == -1"> 
                                     <span data-container="body">{{ section.title }}</span>
                                     <div class="progress">
                                         <div id='fontz' ng-repeat="tw in section.topics" target="_blank" class="progress-bar"
