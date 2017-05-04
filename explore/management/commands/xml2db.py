@@ -20,12 +20,16 @@ from explore.models import Article
 from sys import stderr
 import datetime
 
+
+a_id = ''
+ids = []
+
 class ArticleParser(xml.sax.ContentHandler) :
     def __init__(self) :
         self.content = None
         self.article = None
         self.count = 0
-
+ 
     def cleaned(self) :
         return self.content.replace('\n', ' ').strip()
         #return xml.sax.saxutils.escape(self.content.replace('\n', ' ').strip())
@@ -40,13 +44,16 @@ class ArticleParser(xml.sax.ContentHandler) :
         self.content += c
 
     def endElement(self, name) :
+        global ids, a_id 
+
         try :
             if name == 'article' : 
                 if self.article :
-                    self.article.save()
-                    self.article = None
-                    self.count += 1
-
+                    if a_id in ids :
+                        self.article.save()
+                        self.article = None
+                        self.count += 1
+                    else : print '%s will not be recorded: not in ids list'%a_id
                     if (self.count % 1000) == 0 :
                         print >> stderr, "read in %d articles" % self.count
 
@@ -57,12 +64,12 @@ class ArticleParser(xml.sax.ContentHandler) :
             elif name == 'url'      : self.article.url      = self.cleaned()
             elif name == 'id'       : 
                 if 'cs' in self.content :
-#                    print 'cs found %s'%self.content
                     self.content = self.content.replace('cs/', 'cs')
-#                    print 'replaced %s'%self.content
-                self.article.arxivid  = self.cleaned()
-            elif name == 'created'  : self.article.date     = datetime.date(*[ int(i) for i in self.cleaned().split('-') ])
+                self.article.arxivid = self.cleaned()
+                a_id = self.article.arxivid
+            elif name == 'created'  : self.article.date     = datetime.date(*[ int(i) for i in self.cleaned().split('-')])
             else : pass
+
         except TypeError :
             print 'TypeError %s'%self.article.arxivid
         except ValueError :
@@ -73,10 +80,15 @@ class Command(BaseCommand) :
     help = 'loads the articles from XML file into DB'
 
     def handle(self, *args, **options) :
+        global ids 
         parser = xml.sax.make_parser()
         parser.setContentHandler(ArticleParser())
 
         initial_count = Article.objects.count()
+
+        with open('/home/evly/pulp/shared_ids.txt','r') as f :
+            ids = f.read().split('\n')
+        f.closed
 
         for xmlfile in args :
             pre_count = Article.objects.count()

@@ -63,6 +63,9 @@ class Command(BaseCommand):
                         print >> stderr, "Error: wrong number of tokens in read line, line %d tokens. %s" \
                                          % (linenum, line)                        
 
+                    if title == 'abstr' :
+                        title = 'Abstract'
+
                     try:
                         arx_num, sec_num = article.split('_')
                     except ValueError:

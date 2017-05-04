@@ -12,3 +12,4 @@ server.sh
 env/
 bm25*
 linrel*
+write_db.log
