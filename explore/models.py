@@ -36,6 +36,7 @@ class Article(models.Model) :
     url      = models.URLField()
     date     = models.DateField()
     arxivid  = models.CharField(max_length=12) # e.g. 0704.0002
+    text     = models.TextField()
 
     def __unicode__(self) :
         return u'%s %s' % (self.__class__.__name__, self.title)

@@ -21,52 +21,36 @@ from sys import stderr, exit
 
 
 class Command(BaseCommand) :
-    args = '<topic mapping file>'
-    help = 'loads document to topic mapping file into DB'
+    args = '<articles text mapping file>'
+    help = 'loads articles text to into DB'
 
     def handle(self, *args, **options) :
 
-        NUM_TOPICS_TO_STORE = 10
-        dist_file = 'full_100_inf_props_100.txt'
-        # topics to exclude
-        bad_topics = [10, 16, 17, 22, 23, 24, 25, 26, 32, 34, 35, 37, 40, 44, 47, 48, 54, 55, 56, 57, 62, 63, 66, 68, 72, 76, 83, 84, 85, 93, 94, 96, 97]
-
-        topic_count = Topic.objects.count()
-        if topic_count == 0 :
-            print >> stderr, "Error, topic table must be built first!"
-            exit(1)
+        dist_file = 'db_full.txt'
 
         article_count = Article.objects.count()
         if article_count == 0 :
             print >> stderr, "Error, article table must be built first!"
             exit(1)
 
-        if TopicWeight.objects.count() != 0 :
-            print >> stderr, "Deleting %d TopicWeight objects" % TopicWeight.objects.count()
-            TopicWeight.objects.all().delete()
-            print >> stderr, "done!"
-
-        topics = Topic.objects.all()
         articles = Article.objects.all()
 
-        expected_number_of_fields = topic_count + 2  # (topic_count * 2) + 2
+        expected_number_of_fields = 2
 
         print >> stderr, "reading %s ..." % dist_file  # args[0]
 
-        # arxiv_cs_example/doc-topics.txt
         with open(dist_file) as f:  # with open(args[0]) as f :
 
             linenum = 0
 
             with transaction.atomic() :
                 for line in f :
-                    linenum += 1
-
                     line = line.strip()
+
                     if not line or line.startswith('#') :
                         continue
                 
-                    data = line.split()
+                    data = line.split('\t')
 
                     if len(data) != expected_number_of_fields :
                         print >> stderr, "Error, line %d: expected %d fields, read %d fields" % \
@@ -75,7 +59,7 @@ class Command(BaseCommand) :
 
                     # a = articles[int(data[0])]
 
-                    arx_num = data[1].split('/')[-1].split('.txt')[0]
+                    arx_num = data[0].split('/')[-1].split('.txt')[0]
 #                    if 'cs' in arx_num :
 #                        arx_num = arx_num.replace('cs', 'cs/')
 #                        print arx_num
@@ -85,28 +69,14 @@ class Command(BaseCommand) :
                     except :
                         print >> stderr, "article %s doesn't exist, going to next one" % arx_num
                         continue
+                    
+                    linenum += 1
 
-                    # finding best topics and their numbers, added by genie
-                    dist = map(float, data[2::])
-                    top_ind = [i for i in sorted(range(len(dist)), key=lambda k: dist[k], reverse=True) if i not in bad_topics][0:NUM_TOPICS_TO_STORE]
-
-#                    print top_ind
-
-                    # with transaction.atomic() :
-                    for i in range(len(top_ind)) :  # 2 + (2 * NUM_TOPICS_TO_STORE), 2) : #range(2, len(data), 2) :
-
-                        tw = TopicWeight()
-
-                        tw.article  = a
-                        tw.topic    = topics.get(num=top_ind[i])  # topics[top_ind[i]]
-                        tw.weight   = dist[top_ind[i]]  # float(data[i+1])
-
-                        tw.save()
+                    a.text = data[1]
+                    a.save()
 
                     if (linenum % 1000) == 0 :
-                        self.stderr.write("saved topic weights for %s articles" % linenum)
+                        self.stderr.write("saved texts for %s articles" % linenum)
 
-        expected_weights = NUM_TOPICS_TO_STORE * article_count
-        print >> stderr, "Wrote %d topic weight objects. I was expecting %d (%d articles x %d topics)" \
-                % (TopicWeight.objects.count(), expected_weights, article_count, NUM_TOPICS_TO_STORE)
+        print >> stderr, "Texts added to %d articles, supposed to be %d"%(linenum, article_count)
 

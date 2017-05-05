@@ -118,13 +118,14 @@ class ArxivCleaner(object) :
 
         return wordlist
 
-    def build_corpus(self, articles, stem=True) :
+    def build_corpus(self, articles, stem=False) :
         num_articles = len(articles)
         wordlist = self.build_wordlist(articles)
         corpus = []
 
         for index,a in enumerate(articles) :
-            s = a.title + ' ' + a.abstract
+#            s = a.title + ' ' + a.abstract
+            s = a.text
 
             if stem :
                 corpus.append(self.clean_string_stem(s, wordlist))

@@ -6,8 +6,10 @@ server.sh
 *db.sqlite3*
 *db_*
 *.txt
+!colors.txt
 *.idea
 *.xml
 env/
 bm25*
 linrel*
+write_db.log

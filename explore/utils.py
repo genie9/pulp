@@ -109,19 +109,20 @@ def remove_latex(s) :
 def build_corpus() :
     #return [ a.title + ' ' + a.abstract for a in Article.objects.all() ]
 
-    stemmer = SnowballStemmer('english')
+#    stemmer = SnowballStemmer('english')
 
     corpus = []
 
-    bad_chars = set(string.digits + string.punctuation)
+#    bad_chars = set(string.digits + string.punctuation)
 
     for a in Article.objects.all() :
-        s = a.title + ' ' + a.abstract
-        #s = remove_latex(s)
-        s = s.lower().strip()
-        s = ''.join([ i if i not in bad_chars else ' ' for i in s ])
+#        s = a.title + ' ' + a.abstract
 
-        corpus.append(' '.join([ stemmer.stem(word) for word in s.split() ]))
+        #s = remove_latex(s)
+#        s = s.lower().strip()
+#        s = ''.join([ i if i not in bad_chars else ' ' for i in s ])
+        corpus.append(a.text)
+#        corpus.append(' '.join([ stemmer.stem(word) for word in s.split() ]))
 
     return corpus
 
