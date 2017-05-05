@@ -533,7 +533,7 @@ def textual_query(request):
 
         serializer = ArticleSerializer(articles, many=True)
         return Response({'articles': serializer.data,
-                         'sections': get_sections(articles),
+#                         'sections': get_sections(articles),
                          'topics': get_topics(articles)})
 
 
@@ -668,7 +668,7 @@ def selection_query(request):
 
             return Response({'articles': serializer.data,
                              'keywords': {},
-                             'sections': get_sections(rand_articles),
+#                             'sections': get_sections(rand_articles),
                              'topics': get_topics(rand_articles)})
 
         print "%d articles (%s)" % (len(rand_articles), ','.join([str(a.id) for a in rand_articles]))
@@ -691,7 +691,7 @@ def selection_query(request):
 
         return Response({'articles': article_data,
                          'keywords': keywords,
-                         'sections': get_sections(rand_articles),
+ #                        'sections': get_sections(rand_articles),
                          'topics': get_topics(rand_articles)})
 
 

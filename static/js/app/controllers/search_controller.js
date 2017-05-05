@@ -26,7 +26,7 @@ SearchApp.controller("SearchController", ["$scope", "$rootScope", "$sce", "$loca
             .success(function (response) {
                 $scope.results = response.articles;
                 $scope.topics = response.topics;
-                $scope.sections = response.sections;
+//                $scope.sections = response.sections;
 //                $scope.visualization_data = {topics: response.topics, append: false};
                 $scope.search_heading = $scope.search_keyword;
 
@@ -184,7 +184,7 @@ SearchApp.controller("SearchController", ["$scope", "$rootScope", "$sce", "$loca
         else {
             Api.next(options).success(function (response) {
                 $scope.results = response.articles;
-                $scope.sections = response.sections;
+//                $scope.sections = response.sections;
                 $scope.topics = response.topics;
            //     $scope.visualization_data = {topics: response.topics, append: false};
                 $scope.loading = false;
