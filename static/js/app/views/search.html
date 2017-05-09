@@ -115,7 +115,7 @@
                             <div class="progress" ng-repeat="art in topics" ng-if="art.article_id==result.id">
                                 <div id='fontz' ng-repeat="tw in art.topic_dist" target="_blank" class="progress-bar"
                                      ng-style="{'width': transformers(tw.prop), 'color':fontColor(tw.color), 'background-color': tw.color}"
-                                     data-content="{{ tw.label }}" data-toggle="popover">{{ tw.weight }}%
+                                     data-content="{{ tw.label }}" data-trigger="hover" data-toggle="popover">{{ tw.weight }}%
                                 </div>
                             </div>
                         </div>
