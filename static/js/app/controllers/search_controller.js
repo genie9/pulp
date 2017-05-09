@@ -44,7 +44,6 @@ SearchApp.controller("SearchController", ["$scope", "$rootScope", "$sce", "$loca
             });
     };
 
-    // from here ...
     // for topics progress bar rendering
     $scope.transformers = function (tw) {
         return tw.toString() + '%';
@@ -82,24 +81,6 @@ SearchApp.controller("SearchController", ["$scope", "$rootScope", "$sce", "$loca
         var colors = ["#7B241C","#CB4335","#884EA0","#1F618D","#2E86C1","#17A589","#1E8449","#D4AC0D","#D68910","#BA4A00","#c3aff1","#84c7b0","#f88bcb","#dffeca","#859dce"];
         return colors[ind];
     };
-
-    // NOT WORKING! button and full abstract visibility
-    $scope.toggleVisibility = function (more_btn, less_btn, bar) { //, btn_more, btn_less) {
-        var st_bar = 'hidden';
-        var st_btn_more = 'visible';
-        var st_btn_less = 'hidden';
-
-        if (bar == {'overflow':'hidden'}) {
-            alert('yo');
-            st_bar = 'visible'
-            st_btn_more = 'hidden';
-            st_btn_less = 'visible';
-        }
-        bar = {'overflow':st_bar};
-        more_btn = {'visibility':st_btn_more};
-        less_btn = {'visibility':st_btn_less};
-    };
-    // .... till here, added by genie
 
     $scope.toggle_bookmark_history = function () {
         $scope.bookmark_history_showing = !$scope.bookmark_history_showing;
@@ -368,3 +349,17 @@ SearchApp.controller("SearchController", ["$scope", "$rootScope", "$sce", "$loca
         $scope.search();
     }
 }]);
+SearchApp.directive('toggle', function(){
+    return {
+        restrict: 'A',
+        link: function(scope, element, attrs){
+            if (attrs.toggle=="popover"){
+                $(element).popover({
+                    container:'body',
+                    html:true,
+                    placement:'bottom'
+                });
+            }
+        }
+    };
+})

@@ -1,4 +1,3 @@
-<div id="topic-tooltip" xmlns="http://www.w3.org/1999/html"></div>
 
 <!-- ARTICLE VIEW -->
 <div id="article-view-container" ng-show="viewed_article">
@@ -116,7 +115,7 @@
                                     <div class="progress">
                                         <div id='fontz' ng-repeat="tw in section.topics" target="_blank" class="progress-bar"
                                              ng-style="{'width': transformers(tw.prop), 'color':fontColor(tw.color), 'background-color': tw.color}"
-                                             title="{{ tw.label }}"> {{ tw.weight }}%
+                                             data-content="{{ tw.label }}" data-toggle="popover">{{ tw.weight }}%
                                         </div>
                                     </div>
                                 </div>
@@ -132,7 +131,7 @@
                             <div class="progress" ng-repeat="art in topics" ng-if="art.article_id==result.id">
                                 <div id='fontz' ng-repeat="tw in art.topic_dist" target="_blank" class="progress-bar"
                                      ng-style="{'width': transformers(tw.prop), 'color':fontColor(tw.color), 'background-color': tw.color}"
-                                     title="{{ tw.label }}">{{ tw.weight }}%
+                                     data-content="{{ tw.label }}" data-toggle="popover">{{ tw.weight }}%
                                 </div>
                             </div>
                         </div>
@@ -224,18 +223,5 @@
     </div>
 </div>-->
 <script>
-    var toggleVisibility = function (bar) { //, btn_more, btn_less) {
-        var st_bar = 'hidden';
-        //var st_btn_more = 'visible';
-        //var st_btn_less = 'hidden';
-
-        if (bar.style['overflow'] == 'hidden') {
-            //alert('yo');
-            st_bar = 'visible';
-            //st_btn_more = 'hidden';
-            //st_btn_less = 'visible';
-        }
-        bar.style['overflow'] = st_bar;
-        //btn_more.style.visibility = st_btn_more;
-   };
+    $('.mypopover').popover();
 </script>

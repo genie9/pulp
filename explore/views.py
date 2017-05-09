@@ -890,7 +890,7 @@ def get_topics(articles, normalise=True):
         try:
             for tw in TopicWeight.objects.filter(article=a):
                 tmp['topic_dist'].append({
-                    'label': '\n'.join(tw.topic.label.split(',')),
+                    'label': '<br>'.join(tw.topic.label.split(',')), # hack for frontend popover
                     'num': tw.topic.num,
                     'weight': float("{0:.2f}".format(tw.weight*100)),
                     'prop': tw.weight,
@@ -923,7 +923,7 @@ def get_sec_topics(sec, normalise=True):
         for tw in TopicWeight.objects.filter(section=sec):
 #            print tw.weight
             result.append({
-                'label': '\n'.join(tw.topic.label.split(',')),
+                'label': '<br>'.join(tw.topic.label.split(',')), # hack for frontend popover
                 'num': tw.topic.num,
                 'weight': float("{0:.1f}".format(tw.weight*100)),
                 'prop': tw.weight,
