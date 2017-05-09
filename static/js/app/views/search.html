@@ -106,24 +106,6 @@
                                 <i class="fa fa-thumbs-o-{{ result.bookmarked ? 'up' : 'down'}} fa-2x"></i>
                             </button>
                         </div>
-                    <!-- sections bar --><!--
-                        <div class="col-lg-3">-->
-<!--                        <div id="{{ 'side-bar'+$index }}" style="max-height:150px; overflow:hidden">-->
- <!--                           <h3 class="heading-minor text-center" style="margin-top:0px">Article's sections</h3>
-                            <div ng-repeat="a in sections" ng-if="a.article_id==result.id ">
-                                <div ng-repeat="section in a.sections" ng-if="
-                                            section.title.toLowerCase().indexOf('acknowled') == -1"> 
-                                    <span data-container="body">{{ section.title }}</span>
-                                    <div class="progress">
-                                        <div id='fontz' ng-repeat="tw in section.topics" target="_blank" class="progress-bar"
-                                             ng-style="{'width': transformers(tw.prop), 'color':fontColor(tw.color), 'background-color': tw.color}"
-                                             title="{{ tw.label }}"> {{ tw.weight }}%
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        
-                        </div>-->
                     </div>
                     <!-- fixed elements for article -->
                     <div >
@@ -133,7 +115,7 @@
                             <div class="progress" ng-repeat="art in topics" ng-if="art.article_id==result.id">
                                 <div id='fontz' ng-repeat="tw in art.topic_dist" target="_blank" class="progress-bar"
                                      ng-style="{'width': transformers(tw.prop), 'color':fontColor(tw.color), 'background-color': tw.color}"
-                                     title="{{ tw.label }}">{{ tw.weight }}%
+                                     data-content="{{ tw.label }}" data-toggle="popover">{{ tw.weight }}%
                                 </div>
                             </div>
                         </div>
