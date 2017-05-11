@@ -960,7 +960,7 @@ ul.dropdown-menu li a {
 }
 
 #hidden-element {
-    max-height: 155px; 
+    max-height: 135px;
     overflow: hidden;
     position: relative;
 }
