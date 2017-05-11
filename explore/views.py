@@ -85,13 +85,6 @@ TIMESTAMPS = None  # dict([ (a.id - 1, a.date) for a in Article.objects.all() ])
 def get_articles(method, experiment, start_index, num_articles):
     if method in ('bm25', 'okapibm25'):
         return get_articles_bm25(experiment, start_index, num_articles)
-
-    elif method in ('linrel',):
-        return get_articles_linrel(experiment, start_index, num_articles)
-
-    elif method in ('linrel_positive',):
-        return get_articles_linrel_positive(experiment, start_index, num_articles)
-
     else:
         assert False, "unknown algorithm requested (%s)" % (method)
 
@@ -141,7 +134,6 @@ def get_articles_bm25(exp, start_index, num_articles):  # query_terms, n, from_d
 
     print articles
 
-    # ver.3
     # find top n articles in date range
     top_ids = []
     for i in ranking:
@@ -153,22 +145,14 @@ def get_articles_bm25(exp, start_index, num_articles):  # query_terms, n, from_d
 
     top_ids = top_ids[-num_articles:]
 
-    # ver.1
-    # return [ articles[r[0]] for r in ranking[:n] ]
-
-    # ver.2
-    # id2article = dict([ (a.id, a) for a in Article.objects.filter(pk__in=[ r[0]+1 for r in ranking[:n] ]) ])
-    # top_articles = [ id2article[i[0]+1] for i in ranking[:n] ]
-
-    # ver.3
     id2article = dict([(a.id, a) for a in Article.objects.filter(pk__in=top_ids)])
     top_articles = [id2article[i] for i in top_ids]
 
     return top_articles
 
 
-#print "loading sparse linrel..."
-#X = load_sparse_linrel()
+# print "loading sparse linrel..."
+# X = load_sparse_linrel()
 
 
 def linrel(articles, feedback, data, start, n, from_date, to_date, mew=1.0, exploration_rate=1.0):
@@ -542,21 +526,6 @@ def store_feedback(e, post):
     selected_documents = [int(i) for i in post['selected']]
     print selected_documents
 
-    #    if ei.iteration == 0 :
-    #        print "exploratory = '%s'" % post.get('exploratory', 0)
-    #        #e.classifier = int(post.get('exploratory', 0)) == 1
-    #        e.classifier = True
-    #
-    #        if e.classifier and e.study_type == 1 :
-    #            print "USING EXPLORATION (classifier = %s, study_type = %s)"
-    #                   % (str(e.classifier), 'full' if e.study_type == 1 else 'baseline')
-    #            e.exploration_rate = e.base_exploration_rate
-    #        else :
-    #            print "NOT USING EXPLORATION (classifier = %s, study_type = %s)"
-    #                   % (str(e.classifier), 'full' if e.study_type == 1 else 'baseline')
-    #
-    #    print "exploration rate set to %.2f" % e.exploration_rate
-
     # add selected documents to previous experiment iteration
     add_feedback(ei, selected_documents, post['clicked'], post['seen'])
 
@@ -567,8 +536,6 @@ def selection_query(request):
         post = json.loads(request.body)
 
         print json.dumps(post, sort_keys=True, indent=4, separators=(',', ': '))
-
-        start_time = time.time()
 
         # get user object
         if ('participant_id' in post) and post['participant_id']:
@@ -598,100 +565,24 @@ def selection_query(request):
         if num_topic_articles < e.number_of_documents:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
-        # # get previous experiment iteration
-        #        try :
-        #            ei = get_last_iteration(e)
-        #
-        #        except ExperimentIteration.DoesNotExist :
-        #            return Response(status=status.HTTP_400_BAD_REQUEST)
-        #
-        #        # get parameters from url
-        #        # ?id=x&id=y&id=z
-        #        try :
-        #            selected_documents = [ int(i) for i in post['selected'] ]
-        #
-        #        except ValueError :
-        #            return Response(status=status.HTTP_400_BAD_REQUEST)
-        #
-        #        print selected_documents
-        #
-        #        # only sent in iteration 1
-        #        if ei.iteration == 0 :
-        #            try :
-        #                print "exploratory =", post['exploratory']
-        #                apply_exploration = post['exploratory'] == "1"
-        #
-        #            except :
-        #                return Response(status=status.HTTP_400_BAD_REQUEST)
-        #
-        #            if apply_exploration :
-        #                e.exploration_rate = e.base_exploration_rate
-        #
-        #        print "exploration rate set to %.2f" % e.exploration_rate
-        #
-        #        # add selected documents to previous experiment iteration
-        #        add_feedback(ei, selected_documents, post['clicked'], post['seen'])
-
-        # ver.1
-        # rand_articles, keywords, article_stats, stems = get_top_articles_linrel(e, 0, e.number_of_documents, e.exploration_rate)
-
-        # ver.2
-        # topic_articles, keywords, article_stats, stems = get_top_articles_linrel(e, 0, num_topic_articles, e.exploration_rate)
-        # rand_articles = topic_articles[:e.number_of_documents]
-
-        # ver.3
         print "exploration rate = %f" % e.exploration_rate
-        #try:
-        #    topic_articles, keywords, article_stats, stems = get_top_articles_linrel(e, 0, num_topic_articles,
-        #                                                                             e.exploration_rate)
-        #    rand_articles = topic_articles[:e.number_of_documents]
 
-        #except PulpException, pe:
-        #    print "ERROR", str(pe)
-        if True :
-            # an exception was thrown because we need feedback on at least two
-            # articles to run linrel with only positive feedback, fall back to
-            # okapiBM25 ranking
+        topic_articles = get_articles("bm25", e, 0, num_topic_articles)
+        print "bm25 returned %d" % len(topic_articles)
 
-            topic_articles = get_articles("bm25", e, 0, num_topic_articles)
-            print "bm25 returned %d" % len(topic_articles)
+        rand_articles = topic_articles[:e.number_of_documents]
 
-            rand_articles = topic_articles[:e.number_of_documents]
-
-            create_iteration(e, rand_articles)
-            e.number_of_iterations += 1
-            e.save()
-
-            serializer = ArticleSerializer(rand_articles, many=True)
-
-            print "returning %d articles" % len(rand_articles)
-
-            return Response({'articles': serializer.data,
-                             'keywords': {},
-                             'sections': get_sections(rand_articles),
-                             'topics': get_topics(rand_articles)})
-
-        print "%d articles (%s)" % (len(rand_articles), ','.join([str(a.id) for a in rand_articles]))
-
-        # create new experiment iteration
-        # save new documents to current experiment iteration
         create_iteration(e, rand_articles)
         e.number_of_iterations += 1
         e.save()
 
-        # response to client
         serializer = ArticleSerializer(rand_articles, many=True)
-        article_data = serializer.data
-        for i in article_data:
-            mean, var = article_stats[i['id']]
-            i['mean'] = mean
-            i['variance'] = var
 
-        print time.time() - start_time
+        print "returning %d articles" % len(rand_articles)
 
-        return Response({'articles': article_data,
-                         'keywords': keywords,
- #                        'sections': get_sections(rand_articles),
+        return Response({'articles': serializer.data,
+                         'keywords': {},
+                         'sections': get_sections(rand_articles),
                          'topics': get_topics(rand_articles)})
 
 
@@ -822,7 +713,7 @@ def experiment_ratings(request):
     ratings = json.loads(request.body)
 
     if ('participant_id' not in ratings or 'task_type' not in ratings or 'study_type' not in ratings
-            or 'ratings' not in ratings or 'classifier_value' not in ratings or 'query' not in ratings):
+        or 'ratings' not in ratings or 'classifier_value' not in ratings or 'query' not in ratings):
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
     ratings_file = open(os.path.dirname(__file__) + '/../ratings.json', 'r')
@@ -851,22 +742,20 @@ def experiment_ratings(request):
     return Response(status=status.HTTP_200_OK)
 
 
-# added by genie
 def get_sections(articles):
     result = []
 
-    for a in articles :
-#        print 'assembeling sections for article ', a.arxivid, a.title
-
+    for a in articles:
+        # print 'assembeling sections for article ', a.arxivid, a.title
         tmp = {
             'article_id': a.id,
             'sections': []
-        } 
+        }
         try:
             s_obj = ArticleSection.objects.filter(article=a)
-            
-            for sec in s_obj :
-#                print sec.title
+
+            for sec in s_obj:
+                # print sec.title
                 tmp['sections'].append({
                     'num': sec.num,
                     'title': sec.title,
@@ -890,29 +779,31 @@ def get_topics(articles, normalise=True):
         try:
             for tw in TopicWeight.objects.filter(article=a):
                 tmp['topic_dist'].append({
-                    'label': '<br>'.join(tw.topic.label.split(',')), # hack for popover in html-view
+                    'label': '<br>'.join(tw.topic.label.split(',')),  # hack for popover in html-view
                     'num': tw.topic.num,
-                    'weight': float("{0:.2f}".format(tw.weight*100)),
+                    'weight': float("{0:.2f}".format(tw.weight * 100)),
                     'prop': tw.weight,
                     'color': tw.topic.color
                 })
         except:
             print 'no topics for article %s' % a
             continue
-
-        try :
-            weight_sum = sum([t['prop'] for t in tmp['topic_dist'] if t['prop'] > 0.05])
-            if normalise and weight_sum > 0 :
-                for t in tmp['topic_dist']:
-                    t['prop'] /= (weight_sum / 100)
-                    # t['prop'] = float("{0:.2f}".format(t['weight']))
+        try:
+            if normalise:
+                weight_sum = sum([t['prop'] for t in tmp['topic_dist'] if t['prop'] > 0.05])
+                if weight_sum > 0:
+                    for t in tmp['topic_dist']:
+                        t['prop'] /= (weight_sum / 100)
+                else:
+                    weight_sum = sum([t['prop'] for t in result])
+                    for t in tmp['topic_dist']:
+                        t['prop'] /= (weight_sum / 100)
             else:
                 for t in tmp['topic_dist']:
                     t['prop'] *= 100
-                    # t['prop'] = float("{0:.2f}".format(t['weight']))
         except:
-            print 'topicweight normalization failed'
-        
+            print 'topic-weight normalization failed'
+
         result.append(tmp)
     return result
 
@@ -921,36 +812,34 @@ def get_sec_topics(sec, normalise=True):
     result = []
     try:
         for tw in TopicWeight.objects.filter(section=sec):
-#            print tw.weight
+            # print tw.weight
             result.append({
-                'label': '<br>'.join(tw.topic.label.split(',')), # hack for popover in html-view
+                'label': '<br>'.join(tw.topic.label.split(',')),  # hack for popover in html-view
                 'num': tw.topic.num,
-                'weight': float("{0:.1f}".format(tw.weight*100)),
+                'weight': float("{0:.1f}".format(tw.weight * 100)),
                 'prop': tw.weight,
                 'color': tw.topic.color
             })
-#            print tw.topic.color
+        #            print tw.topic.color
     except:
         print 'no topics for section %s' % sec
-    
-    try :
-        weight_sum = sum([t['prop'] for t in result if t['prop'] > 0.05])
-#        print weight_sum
-        if normalise and weight_sum > 0:
-            for t in result:
-                t['prop'] /= (weight_sum / 100)
-                # t['weight'] = float("{0:.2f}".format(t['weight']))
+
+    try:
+        if normalise:
+            weight_sum = sum([t['prop'] for t in result if t['prop'] > 0.05])
+            if weight_sum > 0:
+                for t in result:
+                    t['prop'] /= (weight_sum / 100)
+            else:
+                weight_sum = sum([t['prop'] for t in result])
+                for t in result:
+                    t['prop'] /= (weight_sum / 100)
         else:
             for t in result:
                 t['prop'] *= 100
-                # t['weight'] = float("{0:.2f}".format(t['weight']))
     except:
-        print 'topicweight normalization failed'
+        print 'topic-weight normalization failed'
     return result
-
-
-# def tw2pros(tw, normalise=True) :
-# return tw
 
 
 @api_view(['GET'])

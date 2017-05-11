@@ -17,122 +17,125 @@ from django.db import models
 import datetime
 
 
-class Topic(models.Model) :
-    label     = models.CharField(max_length=512)
+class Topic(models.Model):
+    label = models.CharField(max_length=512)
     # added by genie
-    num       = models.IntegerField()  # could be topic id
-    color     = models.CharField(max_length=7)
+    num = models.IntegerField()  # could be topic id
+    color = models.CharField(max_length=7)
+
 
 # class TopicKeyword(models.Model) :
 #    topic    = models.ForeignKey(Topic)
 #    keyword  = models.CharField(max_length=128)
 
 
-class Article(models.Model) :
-    title    = models.CharField(max_length=200)
-    author   = models.CharField(max_length=200)
+class Article(models.Model):
+    title = models.CharField(max_length=200)
+    author = models.CharField(max_length=200)
     abstract = models.CharField(max_length=4000)
-    venue    = models.CharField(max_length=200)
-    url      = models.URLField()
-    date     = models.DateField()
-    arxivid  = models.CharField(max_length=12) # e.g. 0704.0002
-    text     = models.TextField()
+    venue = models.CharField(max_length=200)
+    url = models.URLField()
+    date = models.DateField()
+    arxivid = models.CharField(max_length=12)  # e.g. 0704.0002
+    text = models.TextField()
 
-    def __unicode__(self) :
+    def __unicode__(self):
         return u'%s %s' % (self.__class__.__name__, self.title)
 
 
-class ArticleTFIDF(models.Model) :
+class ArticleTFIDF(models.Model):
     article = models.ForeignKey(Article)
-    term    = models.CharField(max_length=32)
-    value   = models.FloatField(blank=False)
+    term = models.CharField(max_length=32)
+    value = models.FloatField(blank=False)
 
-    def __unicode__(self) :
+    def __unicode__(self):
         return u'%s %s %.3f' % (self.__class__.__name__, self.term, self.value)
 
 
 # added by genie
-class ArticleSection(models.Model) :
-    article  = models.ForeignKey(Article)
-    num      = models.IntegerField()
-    title    = models.CharField(max_length=200)
+class ArticleSection(models.Model):
+    article = models.ForeignKey(Article)
+    num = models.IntegerField()
+    title = models.CharField(max_length=200)
     # meaning abstract, introduction, conclusion, middlesections??
     position = models.CharField(max_length=64)
 
 
-class TopicWeight(models.Model) :
-    topic   = models.ForeignKey(Topic)
+class TopicWeight(models.Model):
+    topic = models.ForeignKey(Topic)
     article = models.ForeignKey(Article, default=None, null=True, blank=True)
     section = models.ForeignKey(ArticleSection, default=None, null=True, blank=True)
-    weight  = models.FloatField(default=0.0)
+    weight = models.FloatField(default=0.0)
 
 
-class User(models.Model) :
+class User(models.Model):
     username = models.CharField(max_length=100, blank=False)
 
-    def __unicode__(self) :
-        return u'%s %s' % (self.__class__.__name__, self.username) 
+    def __unicode__(self):
+        return u'%s %s' % (self.__class__.__name__, self.username)
 
-class Experiment(models.Model) :
+
+class Experiment(models.Model):
     RUNNING = 'R'
     COMPLETE = 'C'
     ERROR = 'E'
     EXPERIMENT_STATES = (
-                (RUNNING,   'Running'),
-                (COMPLETE,  'Complete'),
-                (ERROR,     'Error'),
-            )
+        (RUNNING, 'Running'),
+        (COMPLETE, 'Complete'),
+        (ERROR, 'Error'),
+    )
 
     LOOKUP = 'L'
     EXPLORATORY = 'E'
     EXPERIMENT_TYPES = (
-                (LOOKUP,        'Lookup'),
-                (EXPLORATORY,   'Exploratory')
-            )
+        (LOOKUP, 'Lookup'),
+        (EXPLORATORY, 'Exploratory')
+    )
 
-    user                 = models.ForeignKey(User, blank=False)
-    date                 = models.DateTimeField(auto_now=True)
-#    base_exploration_rate = models.FloatField(blank=False) # i.e. exploration_rate set in setup
-#    exploration_rate     = models.FloatField(default=0.0) # i.e. exploration_rate used in linrel
+    user = models.ForeignKey(User, blank=False)
+    date = models.DateTimeField(auto_now=True)
+    #    base_exploration_rate = models.FloatField(blank=False) # i.e. exploration_rate set in setup
+    #    exploration_rate     = models.FloatField(default=0.0) # i.e. exploration_rate used in linrel
     exploration_rate = models.FloatField(blank=False)
-#    classifier           = models.BooleanField(default=False)
-#    task_type            = models.CharField(max_length=1, choices=EXPERIMENT_TYPES, blank=False)
-#    study_type           = models.PositiveIntegerField()
+    #    classifier           = models.BooleanField(default=False)
+    #    task_type            = models.CharField(max_length=1, choices=EXPERIMENT_TYPES, blank=False)
+    #    study_type           = models.PositiveIntegerField()
 
-    number_of_documents  = models.PositiveIntegerField()
+    number_of_documents = models.PositiveIntegerField()
     number_of_iterations = models.PositiveIntegerField(default=0)
-    state                = models.CharField(max_length=1,
-                                            choices=EXPERIMENT_STATES,
-                                            default=RUNNING)
-    query                = models.CharField(max_length=1000)
-    
-    from_date            = models.DateField(default=datetime.date(1900,1,1))
-    to_date              = models.DateField(default=datetime.date(2100,12,31))
+    state = models.CharField(max_length=1,
+                             choices=EXPERIMENT_STATES,
+                             default=RUNNING)
+    query = models.CharField(max_length=1000)
 
-    def __unicode__(self) :
+    from_date = models.DateField(default=datetime.date(1900, 1, 1))
+    to_date = models.DateField(default=datetime.date(2100, 12, 31))
+
+    def __unicode__(self):
         return u'%s %s %s (%s)' % (self.__class__.__name__, self.id, self.user.username, self.state)
 
-class ExperimentIteration(models.Model) :
-    experiment         = models.ForeignKey(Experiment)
-    iteration          = models.PositiveIntegerField()
-    date               = models.DateTimeField(auto_now=True)
-    #shown_documents    = models.ManyToManyField(Article, related_name="shown")
-    #selected_documents = models.ManyToManyField(Article, related_name="selected")
 
-    def __unicode__(self) :
+class ExperimentIteration(models.Model):
+    experiment = models.ForeignKey(Experiment)
+    iteration = models.PositiveIntegerField()
+    date = models.DateTimeField(auto_now=True)
+
+    # shown_documents    = models.ManyToManyField(Article, related_name="shown")
+    # selected_documents = models.ManyToManyField(Article, related_name="selected")
+
+    def __unicode__(self):
         return u'%s %s %s' % (self.__class__.__name__, self.experiment.id, self.iteration)
 
-class ArticleFeedback(models.Model) :
-    article     = models.ForeignKey(Article)             # to associate with the article
-    iteration   = models.ForeignKey(ExperimentIteration) # to search for articles to apply feedback to
-    experiment  = models.ForeignKey(Experiment)          # to help perform linrel
-    selected    = models.NullBooleanField(default=None)
-    clicked     = models.NullBooleanField(default=None)
-    seen        = models.NullBooleanField(default=None)
-    reading_start   = models.FloatField(default=0)
-    reading_end     = models.FloatField(default=0)
 
-    def __unicode__(self) :
+class ArticleFeedback(models.Model):
+    article = models.ForeignKey(Article)  # to associate with the article
+    iteration = models.ForeignKey(ExperimentIteration)  # to search for articles to apply feedback to
+    experiment = models.ForeignKey(Experiment)  # to help perform linrel
+    selected = models.NullBooleanField(default=None)
+    clicked = models.NullBooleanField(default=None)
+    seen = models.NullBooleanField(default=None)
+    reading_start = models.FloatField(default=0)
+    reading_end = models.FloatField(default=0)
+
+    def __unicode__(self):
         return u'%s %s %s' % (self.__class__.__name__, self.article.id, self.selected)
-
-
