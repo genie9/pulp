@@ -901,15 +901,20 @@ def get_topics(articles, normalise=True):
             continue
 
         try:
-            weight_sum = sum([t['prop'] for t in tmp['topic_dist'] if t['prop'] > 0.05])
-            if normalise and weight_sum > 0:
-                for t in tmp['topic_dist']:
-                    t['prop'] /= (weight_sum / 100)
-                    # t['prop'] = float("{0:.2f}".format(t['weight']))
+            if normalise:
+                weight_sum = sum([t['prop'] for t in result if t['prop'] > 0.05])
+                if weight_sum > 0:
+                    for t in result:
+                        t['prop'] /= (weight_sum / 100)
+                        # t['weight'] = float("{0:.2f}".format(t['weight']))
+                else:
+                    weight_sum = sum([t['prop'] for t in result])
+                    for t in result:
+                        t['prop'] /= (weight_sum / 100)
             else:
-                for t in tmp['topic_dist']:
+                for t in result:
                     t['prop'] *= 100
-                    # t['prop'] = float("{0:.2f}".format(t['weight']))
+                    # t['weight'] = float("{0:.2f}".format(t['weight']))
         except:
             print 'topic-weight normalization failed'
 
