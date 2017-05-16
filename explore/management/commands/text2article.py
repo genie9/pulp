@@ -26,7 +26,7 @@ class Command(BaseCommand) :
 
     def handle(self, *args, **options) :
 
-        dist_file = 'db_full.txt'
+#        dist_file = 'db_full.txt'
 
         article_count = Article.objects.count()
         if article_count == 0 :
@@ -37,9 +37,9 @@ class Command(BaseCommand) :
 
         expected_number_of_fields = 2
 
-        print >> stderr, "reading %s ..." % dist_file  # args[0]
+        print >> stderr, "reading %s ..." %  args[0]
 
-        with open(dist_file) as f:  # with open(args[0]) as f :
+        with open(args[0]) as f: 
 
             linenum = 0
 
@@ -77,6 +77,7 @@ class Command(BaseCommand) :
 
                     if (linenum % 1000) == 0 :
                         self.stderr.write("saved texts for %s articles" % linenum)
+        f.closed
 
         print >> stderr, "Texts added to %d articles, supposed to be %d"%(linenum, article_count)
 

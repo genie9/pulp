@@ -25,7 +25,7 @@ class Command(BaseCommand):
     help = 'loads sections of articles from txt file to DB'
 
     def handle(self, *args, **options):
-        title_file = 'section_titles.txt'
+#        title_file = 'section_titles.txt'
 
         article_count = Article.objects.count()
         if article_count == 0:
@@ -41,15 +41,15 @@ class Command(BaseCommand):
         articles = Article.objects.all()
 
         # filling ArticleSection table of DB
-        print >> stderr, "reading %s ..." % title_file  # args[0]
+        print >> stderr, "reading %s ..." % args[0]
 
-        with open(title_file) as tf:
+        with open(args[0]) as f:
             linenum = 0
             saved = 0
             not_count = 0
 
             with transaction.atomic():
-                for line in tf:
+                for line in f:
                     linenum += 1
 
                     line = line.strip()
@@ -99,6 +99,7 @@ class Command(BaseCommand):
                         saved += 1
                     if (saved % 100) == 0:
                         self.stderr.write("saved %d sections for %d articles" % (linenum, saved))
+            f.closed
 
         section_count = ArticleSection.objects.count()
         if section_count != (linenum - not_count):

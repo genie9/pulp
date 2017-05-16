@@ -27,8 +27,8 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
 
         NUM_TOPICS_TO_STORE = 10
-        mallet_file = 'secs_100_props.txt'
-        bad_topics = [10, 16, 17, 22, 23, 24, 25, 26, 32, 34, 35, 37, 40, 44, 47, 48, 54, 55, 56, 57, 62, 63, 66, 68, 72, 76, 83, 84, 85, 93, 94, 96, 97]
+#        mallet_file = 'secs_100_props.txt'
+#        bad_topics = [10, 16, 17, 22, 23, 24, 25, 26, 32, 34, 35, 37, 40, 44, 47, 48, 54, 55, 56, 57, 62, 63, 66, 68, 72, 76, 83, 84, 85, 93, 94, 96, 97]
 
         topic_count = Topic.objects.count()
         if topic_count == 0:
@@ -51,9 +51,9 @@ class Command(BaseCommand):
 
         # updating TopicWeight table of DB with sections topic weights
         expected_number_of_fields = topic_count + 2
-        print >> stderr, "reading %s ..." % mallet_file
+        print >> stderr, "reading %s ..." % args[0]
 
-        with open(mallet_file) as f:
+        with open(args[0]) as f:
             linenum = 0
 
             with transaction.atomic():
@@ -90,7 +90,8 @@ class Command(BaseCommand):
 
                     # finding best topics and their numbers, added by genie
                     dist = map(float, data[2::])
-                    top_ind = [i for i in sorted(range(len(dist)), key=lambda k: dist[k], reverse=True) if i not in bad_topics][0:NUM_TOPICS_TO_STORE]
+#                    top_ind = [i for i in sorted(range(len(dist)), key=lambda k: dist[k], reverse=True) if i not in bad_topics][0:NUM_TOPICS_TO_STORE]
+                    top_ind = [i for i in sorted(range(len(dist)), key=lambda k: dist[k], reverse=True)][0:NUM_TOPICS_TO_STORE]
 
 
                     for i in range(len(top_ind)):
@@ -106,7 +107,8 @@ class Command(BaseCommand):
 
                     if (linenum % 1000) == 0:
                         self.stderr.write("saved topic weights for %s sections" % linenum)
+            f.closed
 
-        expected_weights = NUM_TOPICS_TO_STORE * article_count
+        expected_weights = NUM_TOPICS_TO_STORE * section_count
         print >> stderr, "Warning: Wrote %d topic weight objects. I was expecting %d (%d articles x %d topics)." \
-                         % (TopicWeight.objects.count(), expected_weights, article_count, NUM_TOPICS_TO_STORE)
+                         % (TopicWeight.objects.count(), expected_weights, section_count, NUM_TOPICS_TO_STORE)

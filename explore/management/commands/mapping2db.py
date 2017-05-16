@@ -27,8 +27,8 @@ class Command(BaseCommand) :
     def handle(self, *args, **options) :
 
         NUM_TOPICS_TO_STORE = 10
-        dist_file = 'full_100_inf_props_100.txt'
-        bad_topics = [10, 16, 17, 22, 23, 24, 25, 26, 32, 34, 35, 37, 40, 44, 47, 48, 54, 55, 56, 57, 62, 63, 66, 68, 72, 76, 83, 84, 85, 93, 94, 96, 97]
+#        dist_file = 'full_100_inf_props_100.txt'
+#        bad_topics = [10, 16, 17, 22, 23, 24, 25, 26, 32, 34, 35, 37, 40, 44, 47, 48, 54, 55, 56, 57, 62, 63, 66, 68, 72, 76, 83, 84, 85, 93, 94, 96, 97]
 
         topic_count = Topic.objects.count()
         if topic_count == 0 :
@@ -50,10 +50,10 @@ class Command(BaseCommand) :
 
         expected_number_of_fields = topic_count + 2  # (topic_count * 2) + 2
 
-        print >> stderr, "reading %s ..." % dist_file  # args[0]
+        print >> stderr, "reading %s ..." %  args[0]
 
         # arxiv_cs_example/doc-topics.txt
-        with open(dist_file) as f:  # with open(args[0]) as f :
+        with open(args[0]) as f:
 
             linenum = 0
 
@@ -87,7 +87,8 @@ class Command(BaseCommand) :
 
                     # finding best topics and their numbers, added by genie
                     dist = map(float, data[2::])
-                    top_ind = [i for i in sorted(range(len(dist)), key=lambda k: dist[k], reverse=True) if i not in bad_topics][0:NUM_TOPICS_TO_STORE]
+#                    top_ind = [i for i in sorted(range(len(dist)), key=lambda k: dist[k], reverse=True) if i not in bad_topics][0:NUM_TOPICS_TO_STORE]
+                    top_ind = [i for i in sorted(range(len(dist)), key=lambda k: dist[k], reverse=True)][0:NUM_TOPICS_TO_STORE]
 
 #                    print top_ind
 
@@ -104,6 +105,7 @@ class Command(BaseCommand) :
 
                     if (linenum % 1000) == 0 :
                         self.stderr.write("saved topic weights for %s articles" % linenum)
+            f.closed
 
         expected_weights = NUM_TOPICS_TO_STORE * article_count
         print >> stderr, "Wrote %d topic weight objects. I was expecting %d (%d articles x %d topics)" \

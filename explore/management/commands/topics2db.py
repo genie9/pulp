@@ -20,7 +20,8 @@ from explore.models import Topic
 from sys import stderr
 
 class Command(BaseCommand) :
-    args = ['secs_100_keys.txt','topics_summary_nums.txt','colors.txt']
+    args = ['secs_nonstem_100_keys_uniq.txt','topics_summary_nums.txt','colors.txt'] #'<topic-keys file, topic-number file sorted by prominence, colors code file>'
+    print args
     help = 'loads topics from txt file into DB'
     COLORS = args[2]
 
