@@ -151,10 +151,6 @@ def get_articles_bm25(exp, start_index, num_articles):  # query_terms, n, from_d
     return top_articles
 
 
-# print "loading sparse linrel..."
-# X = load_sparse_linrel()
-
-
 def linrel(articles, feedback, data, start, n, from_date, to_date, mew=1.0, exploration_rate=1.0):
     assert len(articles) == len(feedback), "articles and feedback are not the same length"
 
@@ -526,6 +522,21 @@ def store_feedback(e, post):
     selected_documents = [int(i) for i in post['selected']]
     print selected_documents
 
+    #    if ei.iteration == 0 :
+    #        print "exploratory = '%s'" % post.get('exploratory', 0)
+    #        #e.classifier = int(post.get('exploratory', 0)) == 1
+    #        e.classifier = True
+    #
+    #        if e.classifier and e.study_type == 1 :
+    #            print "USING EXPLORATION (classifier = %s, study_type = %s)"
+    #                   % (str(e.classifier), 'full' if e.study_type == 1 else 'baseline')
+    #            e.exploration_rate = e.base_exploration_rate
+    #        else :
+    #            print "NOT USING EXPLORATION (classifier = %s, study_type = %s)"
+    #                   % (str(e.classifier), 'full' if e.study_type == 1 else 'baseline')
+    #
+    #    print "exploration rate set to %.2f" % e.exploration_rate
+
     # add selected documents to previous experiment iteration
     add_feedback(ei, selected_documents, post['clicked'], post['seen'])
 
@@ -536,6 +547,8 @@ def selection_query(request):
         post = json.loads(request.body)
 
         print json.dumps(post, sort_keys=True, indent=4, separators=(',', ': '))
+
+        start_time = time.time()
 
         # get user object
         if ('participant_id' in post) and post['participant_id']:
@@ -742,11 +755,13 @@ def experiment_ratings(request):
     return Response(status=status.HTTP_200_OK)
 
 
+# added by genie
 def get_sections(articles):
     result = []
 
     for a in articles:
-        # print 'assembeling sections for article ', a.arxivid, a.title
+        #        print 'assembeling sections for article ', a.arxivid, a.title
+
         tmp = {
             'article_id': a.id,
             'sections': []
@@ -755,7 +770,7 @@ def get_sections(articles):
             s_obj = ArticleSection.objects.filter(article=a)
 
             for sec in s_obj:
-                # print sec.title
+                #                print sec.title
                 tmp['sections'].append({
                     'num': sec.num,
                     'title': sec.title,
@@ -779,7 +794,7 @@ def get_topics(articles, normalise=True):
         try:
             for tw in TopicWeight.objects.filter(article=a):
                 tmp['topic_dist'].append({
-                    'label': '<br>'.join(tw.topic.label.split(',')),  # hack for popover in html-view
+                    'label': '<br>'.join(tw.topic.label.split(',')),  # hack for frontend popover
                     'num': tw.topic.num,
                     'weight': float("{0:.2f}".format(tw.weight * 100)),
                     'prop': tw.weight,
@@ -788,21 +803,24 @@ def get_topics(articles, normalise=True):
         except:
             print 'no topics for article %s' % a
             continue
+
         try:
             if normalise:
                 weight_sum = sum([t['prop'] for t in tmp['topic_dist'] if t['prop'] > 0.05])
                 if weight_sum > 0:
                     for t in tmp['topic_dist']:
                         t['prop'] /= (weight_sum / 100)
+                        # t['weight'] = float("{0:.2f}".format(t['weight']))
                 else:
-                    weight_sum = sum([t['prop'] for t in result])
+                    weight_sum = sum([t['prop'] for t in tmp['topic_dist']])
                     for t in tmp['topic_dist']:
                         t['prop'] /= (weight_sum / 100)
             else:
                 for t in tmp['topic_dist']:
                     t['prop'] *= 100
+                    # t['weight'] = float("{0:.2f}".format(t['weight']))
         except:
-            print 'topic-weight normalization failed'
+            print 'topic-weight normalization for article failed'
 
         result.append(tmp)
     return result
@@ -812,33 +830,34 @@ def get_sec_topics(sec, normalise=True):
     result = []
     try:
         for tw in TopicWeight.objects.filter(section=sec):
-            # print tw.weight
             result.append({
-                'label': '<br>'.join(tw.topic.label.split(',')),  # hack for popover in html-view
+                'label': '<br>'.join(tw.topic.label.split(',')),  # hack for frontend popover
                 'num': tw.topic.num,
                 'weight': float("{0:.1f}".format(tw.weight * 100)),
                 'prop': tw.weight,
                 'color': tw.topic.color
             })
-        #            print tw.topic.color
     except:
         print 'no topics for section %s' % sec
 
     try:
         if normalise:
             weight_sum = sum([t['prop'] for t in result if t['prop'] > 0.05])
+            #            print 'topic weight sum over 5 is %f'%weight_sum
             if weight_sum > 0:
                 for t in result:
                     t['prop'] /= (weight_sum / 100)
             else:
+                print [t['prop'] for t in result]
                 weight_sum = sum([t['prop'] for t in result])
+                print 'not any topics with weight over 5, new sum is %f' % weight_sum
                 for t in result:
                     t['prop'] /= (weight_sum / 100)
         else:
             for t in result:
                 t['prop'] *= 100
     except:
-        print 'topic-weight normalization failed'
+        print 'topic-weight normalization for sections failed'
     return result
 
 
