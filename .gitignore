@@ -7,10 +7,12 @@ server.sh
 *db_*
 *.txt
 !colors.txt
-*.idea
-*.xml
+*idea
+*xml
 env/
 bm25*
 linrel*
 *log
 *zip
+*.tar
+*gz
