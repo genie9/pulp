@@ -5,7 +5,7 @@ node_modules/
 server.sh
 *db.sqlite3*
 *db_*
-*.txt
+data_files/
 !colors.txt
 *.idea
 *.xml
