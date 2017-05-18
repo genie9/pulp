@@ -12,3 +12,5 @@ env/
 bm25*
 linrel*
 *.log
+*.zip
+/data_files
