@@ -5,7 +5,6 @@ node_modules/
 server.sh
 *db.sqlite3*
 *db_*
-*txt
 !colors.txt
 *idea
 *xml
@@ -14,3 +13,4 @@ bm25*
 linrel*
 *log
 *zip
+data_files
