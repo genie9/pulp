@@ -88,12 +88,16 @@ class Command(BaseCommand):
                         continue
 
                     section = ArticleSection()
+                    try:
+                        section.num = int(sec_num)
+                        section.article = a
+                        section.title = title
 
-                    section.num = int(sec_num)
-                    section.article = a
-                    section.title = title
-
-                    section.save()
+                        section.save()
+                    except Exeption as ex:
+                        template = "An exception of type {0} occurred in article {1} section {2}. Arguments:\n{3!r}"
+                        message = template.format(type(ex).__name__, arx_num, sec_num, ex.args)
+                        print >> stderr, message
 
                     if sec_num == '0':
                         saved += 1

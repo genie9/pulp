@@ -72,9 +72,13 @@ class Command(BaseCommand) :
                     
                     linenum += 1
 
-                    a.text = data[1]
-                    a.save()
-
+                    try:
+                        a.text = data[1]
+                        a.save()
+                    except Exeption as ex:
+                        template = "An exception of type {0} occurred in article {1}. Arguments:\n{2!r}"
+                        message = template.format(type(ex).__name__, arx_num, ex.args)
+                        print >> stderr, message
                     if (linenum % 1000) == 0 :
                         self.stderr.write("saved texts for %s articles" % linenum)
         f.closed

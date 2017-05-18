@@ -28,7 +28,8 @@ class Command(BaseCommand):
 
         NUM_TOPICS_TO_STORE = 10
 #        mallet_file = 'secs_100_props.txt'
-#        bad_topics = [10, 16, 17, 22, 23, 24, 25, 26, 32, 34, 35, 37, 40, 44, 47, 48, 54, 55, 56, 57, 62, 63, 66, 68, 72, 76, 83, 84, 85, 93, 94, 96, 97]
+        bad_topics = [4, 12, 18, 22, 24, 25, 32, 33, 38, 43, 47, 48, 50, 57, 61, 63, 65, 69, 77, 78, 82, 83, 86, 88, 89, 94, 97, 99]
+#[10, 16, 17, 22, 23, 24, 25, 26, 32, 34, 35, 37, 40, 44, 47, 48, 54, 55, 56, 57, 62, 63, 66, 68, 72, 76, 83, 84, 85, 93, 94, 96, 97]
 
         topic_count = Topic.objects.count()
         if topic_count == 0:
@@ -90,18 +91,22 @@ class Command(BaseCommand):
 
                     # finding best topics and their numbers, added by genie
                     dist = map(float, data[2::])
-#                    top_ind = [i for i in sorted(range(len(dist)), key=lambda k: dist[k], reverse=True) if i not in bad_topics][0:NUM_TOPICS_TO_STORE]
-                    top_ind = [i for i in sorted(range(len(dist)), key=lambda k: dist[k], reverse=True)][0:NUM_TOPICS_TO_STORE]
+                    top_ind = [i for i in sorted(range(len(dist)), key=lambda k: dist[k], reverse=True) if i not in bad_topics][0:NUM_TOPICS_TO_STORE]
+#                    top_ind = [i for i in sorted(range(len(dist)), key=lambda k: dist[k], reverse=True)][0:NUM_TOPICS_TO_STORE]
 
+                    try:
+                        for i in range(len(top_ind)):
+                            tw = TopicWeight()
 
-                    for i in range(len(top_ind)):
-                        tw = TopicWeight()
+                            tw.section = s
+                            tw.topic = topics.get(num=top_ind[i])  # topics[top_ind[i]]
+                            tw.weight = dist[top_ind[i]]  # float(data[i+1])
 
-                        tw.section = s
-                        tw.topic = topics.get(num=top_ind[i])  # topics[top_ind[i]]
-                        tw.weight = dist[top_ind[i]]  # float(data[i+1])
-
-                        tw.save()
+                            tw.save()
+                    except Exeption as ex:
+                        template = "An exception of type {0} occurred in article {1} section {2}. Arguments:\n{3!r}"
+                        message = template.format(type(ex).__name__, arx_num, sec_num, ex.args)
+                        print >> stderr, message
 
 #                    print top_ind
 
@@ -110,5 +115,5 @@ class Command(BaseCommand):
             f.closed
 
         expected_weights = NUM_TOPICS_TO_STORE * section_count
-        print >> stderr, "Warning: Wrote %d topic weight objects. I was expecting %d (%d articles x %d topics)." \
-                         % (TopicWeight.objects.count(), expected_weights, section_count, NUM_TOPICS_TO_STORE)
+        print >> stderr, "Warning: Wrote %d topic weight objects. I was expecting %d (%d sections x %d topics)." \
+                         % (TopicWeight.objects.exclude(section__isnull=True).count(), expected_weights, section_count, NUM_TOPICS_TO_STORE)

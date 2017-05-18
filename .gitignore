@@ -12,4 +12,5 @@ server.sh
 env/
 bm25*
 linrel*
-*.log
+*log
+*zip

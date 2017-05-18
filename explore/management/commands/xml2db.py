@@ -70,10 +70,14 @@ class ArticleParser(xml.sax.ContentHandler) :
             elif name == 'created'  : self.article.date     = datetime.date(*[ int(i) for i in self.cleaned().split('-')])
             else : pass
 
-        except TypeError :
-            print 'TypeError %s'%self.article.arxivid
-        except ValueError :
-            print 'ValueError %s'%self.article.arxivid
+        except Exeption as ex:
+            template = "An exception of type {0} occurred in article {1}. Arguments:\n{2!r}"
+            message = template.format(type(ex).__name__, c, ex.args)
+            print >> stderr, message
+#        except TypeError :
+#            print 'TypeError %s'%self.article.arxivid
+#        except ValueError :
+#            print 'ValueError %s'%self.article.arxivid
 
 class Command(BaseCommand) :
     args = '<XML file> <XML file> ...'
