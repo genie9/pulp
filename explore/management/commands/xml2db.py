@@ -80,7 +80,7 @@ class ArticleParser(xml.sax.ContentHandler) :
 #            print 'ValueError %s'%self.article.arxivid
 
 class Command(BaseCommand) :
-    args = '<XML file> <XML file> ...'
+    args = '<id file> <XML file> <XML file> ...'
     help = 'loads the articles from XML file into DB'
 
     def handle(self, *args, **options) :
@@ -90,11 +90,11 @@ class Command(BaseCommand) :
 
         initial_count = Article.objects.count()
 
-        with open('/home/evly/pulp/shared_ids.txt','r') as f :
+        with open(args[0],'r') as f :
             ids = f.read().split('\n')
         f.closed
 
-        for xmlfile in args :
+        for xmlfile in args[1:] :
             pre_count = Article.objects.count()
 
             try :

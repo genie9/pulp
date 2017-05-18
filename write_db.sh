@@ -5,7 +5,7 @@ write=write_db_${today}.log
 
 rm db.sqlite3
 python manage.py syncdb > $write 2>&1
-python manage.py xml2db ARXIV_310316.xml >> $write 2>&1
+python manage.py xml2db shared_ids.txt ARXIV_310316.xml >> $write 2>&1
 python manage.py text2article db_full.txt >> $write 2>&1
 python manage.py okapibm25 >> $write 2>&1
 python manage.py sections2db section_titles.txt >> $write 2>&1 
