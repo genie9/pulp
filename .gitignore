@@ -14,5 +14,4 @@ bm25*
 linrel*
 *log
 *zip
-*.tar
-*gz
+/data_files
