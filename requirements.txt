@@ -2,7 +2,7 @@ Django==3.1.1
 djangorestframework==3.9.1
 nltk==3.4.5
 numpy==1.19.2
-pyenchant==3.1.1
+pyenchant==3.2.0
 scikit-learn==0.23.2
 scipy==1.5.2
 randomcolor==0.4.4.5
