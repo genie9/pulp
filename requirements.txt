@@ -1,7 +1,7 @@
 Django==3.1.1
 djangorestframework==3.9.1
 nltk==3.4.5
-numpy==1.19.2
+numpy==1.20.0
 pyenchant==3.1.1
 scikit-learn==0.23.2
 scipy==1.5.2
